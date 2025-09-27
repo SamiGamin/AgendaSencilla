@@ -121,6 +121,7 @@ class GestionContactoViewModel(
     }
 }
 
+@Suppress("UNCHECKED_CAST")
 class GestionContactoViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(GestionContactoViewModel::class.java)) {
