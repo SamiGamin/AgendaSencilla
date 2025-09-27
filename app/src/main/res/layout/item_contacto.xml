@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp">
+    <!-- LinearLayout para organizar los elementos verticalmente. -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="16dp">
+
+        <!-- Imagen del contacto, hecha circular con ShapeableImageView. -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/ivFotoContacto"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+            tools:src="@tools:sample/avatars" />
+
+        <!-- Nombre del contacto. -->
+        <TextView
+            android:id="@+id/tvNombreContacto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@+id/ivFotoContacto"
+            app:layout_constraintStart_toStartOf="@+id/ivFotoContacto"
+            app:layout_constraintTop_toBottomOf="@+id/ivFotoContacto"
+            tools:text="Abuela Elena" />
+
+
+
+            <!-- Botón de Llamar. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLlamar"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="58dp"
+            android:layout_height="58dp"
+            app:iconPadding="0dp"
+            app:icon="@drawable/ic_call"
+            app:iconGravity="textStart"
+            app:layout_constraintBottom_toBottomOf="@+id/ivFotoContacto"
+            app:layout_constraintEnd_toEndOf="@+id/ivFotoContacto"
+            app:layout_constraintStart_toStartOf="@+id/ivFotoContacto" />
+
+
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

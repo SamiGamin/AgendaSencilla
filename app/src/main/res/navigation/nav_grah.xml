@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_grah"
+    app:startDestination="@id/contactosFavoritosFragment">
+
+    <fragment
+        android:id="@+id/contactosFavoritosFragment"
+        android:name="com.SamiDev.agendasencilla.ui.contactos.ContactosFavoritosFragment"
+        android:label="Favoritos"
+        tools:layout="@layout/fragment_contactos_favoritos" >
+        <action
+            android:id="@+id/action_contactosFavoritosFragment_to_configuracionFragment"
+            app:destination="@id/configuracionFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/configuracionFragment"
+        android:name="com.SamiDev.agendasencilla.ui.configuracion.ConfiguracionFragment"
+        android:label="Configuracion"
+        tools:layout="@layout/fragment_configuracion" />
+    <fragment
+        android:id="@+id/gestionContactoFragment2"
+        android:name="com.SamiDev.agendasencilla.ui.gestion.GestionContactoFragment"
+        android:label="Gestionar Contacto"
+        tools:layout="@layout/fragment_gestion_contacto" />
+    <fragment
+        android:id="@+id/listadocontactosFragment"
+        android:name="com.SamiDev.agendasencilla.ui.listadocontactos.listadocontactosFragment"
+        android:label="Contactos"
+        tools:layout="@layout/fragment_listadocontactos" >
+        <action
+            android:id="@+id/action_listadocontactosFragment_to_gestionContactoFragment2"
+            app:destination="@id/gestionContactoFragment2" />
+        <action
+            android:id="@+id/action_listadocontactosFragment_to_configuracionFragment"
+            app:destination="@id/configuracionFragment" />
+    </fragment>
+</navigation>
