@@ -26,7 +26,7 @@ class listadocontactosFragment : Fragment() {
         ListadocontactosViewModelFactory(requireActivity().application)
     }
 
-    private lateinit var contactoAdapter: ContactoAdapter
+    private lateinit var ListadocontactoAdapter: ContactoAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,13 +46,18 @@ class listadocontactosFragment : Fragment() {
     }
 
     private fun configurarRecyclerView() {
-        // Inicializar el adapter, pasando la lambda para el clic en un ítem
-        contactoAdapter = ContactoAdapter { contacto ->
-            manejarClicEnContacto(contacto)
-        }
+        // Inicializar el adapter, pasando las lambdas para el clic en un ítem y en el botón de favorito
+        ListadocontactoAdapter = ContactoAdapter(
+            onItemClicked = { contacto ->
+                manejarClicEnContacto(contacto)
+            },
+            onFavoritoClicked = { contacto ->
+                viewModel.actualizarEstadoFavorito(contacto)
+            }
+        )
 
         binding.rvContactos.apply {
-            adapter = contactoAdapter
+            adapter = ListadocontactoAdapter
             layoutManager = LinearLayoutManager(requireContext())
             // Considera añadir ItemDecoration para espaciado si es necesario
         }
@@ -62,7 +67,7 @@ class listadocontactosFragment : Fragment() {
         // Observar la lista de contactos del ViewModel
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.todosLosContactos.collectLatest { listaDeContactos ->
-                contactoAdapter.submitList(listaDeContactos)
+                ListadocontactoAdapter.submitList(listaDeContactos)
             }
         }
     }

@@ -52,7 +52,7 @@
             style="?attr/materialButtonOutlinedStyle"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            app:icon="@drawable/ic_favoritos"
+            app:icon="@drawable/ic_favorito_borde"
             app:iconGravity="textStart"
             app:iconPadding="0dp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -61,7 +61,7 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLlamar"
             style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="32dp"
+            android:layout_width="48dp"
             android:layout_height="32dp"
             app:icon="@drawable/ic_call"
             app:iconGravity="textStart"

@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/contactosFavoritosFragment"
-        android:icon="@drawable/ic_favoritos"
+        android:icon="@drawable/ic_favorite"
         android:title="Favoritos" />
     <item
         android:id="@+id/listadocontactosFragment"

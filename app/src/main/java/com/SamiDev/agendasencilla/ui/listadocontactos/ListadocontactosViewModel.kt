@@ -5,10 +5,12 @@ package com.SamiDev.agendasencilla.ui.listadocontactos
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.SamiDev.agendasencilla.data.database.AppDatabase
 import com.SamiDev.agendasencilla.data.database.Contacto
 import com.SamiDev.agendasencilla.data.repositorio.ContactoRepositorio
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 
 /**
  * ViewModel para el fragmento que muestra la lista de todos los contactos.
@@ -24,8 +26,18 @@ class ListadocontactosViewModel(private val contactoRepositorio: ContactoReposit
      */
     val todosLosContactos: Flow<List<Contacto>> = contactoRepositorio.obtenerTodosLosContactos()
 
-    // Aquí se podrían añadir funciones para otras operaciones, como eliminar un contacto,
-    // aunque la creación/edición se manejará en GestionContactoViewModel.
+    /**
+     * Actualiza el estado de favorito de un contacto.
+     * Crea una copia del contacto con el estado de 'esFavorito' invertido y lo actualiza en el repositorio.
+     *
+     * @param contacto El [Contacto] cuyo estado de favorito se va a actualizar.
+     */
+    fun actualizarEstadoFavorito(contacto: Contacto) {
+        viewModelScope.launch {
+            val contactoActualizado = contacto.copy(esFavorito = !contacto.esFavorito)
+            contactoRepositorio.actualizarContacto(contactoActualizado)
+        }
+    }
 }
 
 /**

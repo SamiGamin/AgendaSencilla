@@ -44,14 +44,13 @@ class GestionContactoViewModel(
             } else { // Si el ID no es 0, es un contacto existente que se actualiza
                 contactoRepositorio.actualizarContacto(contacto)
             }
-            // Podrías emitir un estado aquí si es necesario, por ejemplo, para confirmar guardado.
         }
     }
 
     /**
      * Inicia el proceso de importación de contactos desde el dispositivo.
-     * Lee los contactos del ContentProvider del dispositivo y los guarda en la base de datos Room
-     * si no existen previamente (verificando por número de teléfono).
+     * Lee los contactos del ContentProvider del dispositivo, incluyendo su foto URI,
+     * y los guarda en la base de datos Room si no existen previamente (verificando por número de teléfono).
      */
     fun importarContactosDelDispositivo() {
         viewModelScope.launch {
@@ -63,35 +62,36 @@ class GestionContactoViewModel(
                 val contentResolver = application.contentResolver
                 val projection = arrayOf(
                     ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                    ContactsContract.CommonDataKinds.Phone.NUMBER
+                    ContactsContract.CommonDataKinds.Phone.NUMBER,
+                    ContactsContract.CommonDataKinds.Phone.PHOTO_URI // Añadido para obtener la URI de la foto
                 )
 
-                // Usar try-with-resources para asegurar que el cursor se cierre
                 contentResolver.query(
                     ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                     projection,
-                    null, // Sin selección, obtiene todos los contactos con número
+                    null, 
                     null,
-                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC" // Ordenar por nombre
-                )?.use { cursor -> // El bloque use cierra el cursor automáticamente
+                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC"
+                )?.use { cursor ->
                     val indiceNombre = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
                     val indiceNumero = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                    val indiceFotoUri = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_URI)
 
-                    if (indiceNombre >= 0 && indiceNumero >= 0) {
+                    if (indiceNombre >= 0 && indiceNumero >= 0) { // No es estrictamente necesario verificar indiceFotoUri aquí, ya que puede ser null
                         while (cursor.moveToNext()) {
                             val nombre = cursor.getString(indiceNombre)
                             val numeroTelefono = cursor.getString(indiceNumero)
+                            val fotoUriDesdeDispositivo = if (indiceFotoUri != -1) cursor.getString(indiceFotoUri) else null
 
                             if (nombre != null && numeroTelefono != null && numeroTelefono.isNotBlank()) {
-                                // Verificar si el contacto ya existe en Room por número de teléfono
                                 val contactoExistente = contactoRepositorio.obtenerContactoPorNumero(numeroTelefono)
                                 if (contactoExistente == null) {
                                     val nuevoContacto = Contacto(
                                         nombreCompleto = nombre,
                                         numeroTelefono = numeroTelefono,
-                                        fotoUri = null, // Valor por defecto
-                                        esFavorito = false, // Valor por defecto
-                                        notas = null // Valor por defecto
+                                        fotoUri = fotoUriDesdeDispositivo, // Asignar la foto URI obtenida
+                                        esFavorito = false,
+                                        notas = null
                                     )
                                     contactoRepositorio.insertarContacto(nuevoContacto)
                                     contadorContactosImportados++
@@ -109,28 +109,18 @@ class GestionContactoViewModel(
 
             } catch (e: Exception) {
                 _estadoImportacion.value = "Error durante la importación: ${e.message}"
-                // Considera loguear el error completo: Log.e("GestionContactoViewModel", "Error importando", e)
+                // Log.e("GestionContactoViewModel", "Error importando contactos", e) // Considera añadir logging real
             } finally {
                 _importacionEnCurso.value = false
             }
         }
     }
 
-    /**
-     * Limpia el mensaje de estado de importación.
-     * Útil para llamar después de que el usuario ha visto el mensaje.
-     */
     fun limpiarEstadoImportacion() {
         _estadoImportacion.value = null
     }
 }
 
-/**
- * Factory para crear instancias de [GestionContactoViewModel].
- * Es necesario para poder pasar [Application] y [ContactoRepositorio] al ViewModel.
- *
- * @property application La instancia de la aplicación.
- */
 class GestionContactoViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(GestionContactoViewModel::class.java)) {
