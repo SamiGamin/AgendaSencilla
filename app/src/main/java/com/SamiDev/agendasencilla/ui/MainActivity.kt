@@ -1,6 +1,8 @@
 package com.SamiDev.agendasencilla.ui
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.Menu
@@ -9,6 +11,8 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.NavController
@@ -27,8 +31,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var preferenciasManager: PreferenciasManager
 
+    companion object {
+        private const val REQUEST_CODE_CALL_PHONE = 101
+    }
+
     override fun attachBaseContext(newBase: Context) {
-        val localPreferenciasManager = PreferenciasManager(newBase.applicationContext)
+        val localPreferenciasManager = PreferenciasManager.getInstance(newBase.applicationContext)
         val opcionTamanoFuente = localPreferenciasManager.obtenerOpcionTamanoFuente()
         val nuevaConfiguracion = Configuration(newBase.resources.configuration)
 
@@ -46,7 +54,7 @@ class MainActivity : AppCompatActivity() {
 
         // Inicializar PreferenciasManager para el resto de la actividad (ej. tema)
         // Esto ocurre DESPUÉS de attachBaseContext.
-        preferenciasManager = PreferenciasManager(applicationContext)
+        preferenciasManager = PreferenciasManager.getInstance(applicationContext)
 
         // Aplicar el tema antes de inflar la vista y setContentView
         aplicarTemaGuardado()
@@ -54,6 +62,9 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Solicitar permiso de llamada al iniciar
+        solicitarPermisoDeLlamada()
 
         // Configurar la Toolbar como ActionBar
         setSupportActionBar(binding.toolbar)
@@ -64,13 +75,10 @@ class MainActivity : AppCompatActivity() {
         navController = navHostFragment.navController
 
         // Configurar AppBarConfiguration para los destinos de nivel superior
-        // Los IDs deben coincidir con los IDs de los fragmentos en tu nav_graph que son
-        // destinos principales a los que se llega directamente desde la navegación inferior o similar.
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.contactosFavoritosFragment,
                 R.id.listadocontactosFragment
-                // R.id.configuracionFragment // Eliminado para que no sea top-level
             )
         )
 
@@ -86,6 +94,14 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+    }
+
+    private fun solicitarPermisoDeLlamada() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            // El permiso no ha sido concedido, así que lo solicitamos.
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CALL_PHONE), REQUEST_CODE_CALL_PHONE)
+        }
+        // Si el permiso ya está concedido, no hacemos nada.
     }
 
     private fun aplicarTemaGuardado() {

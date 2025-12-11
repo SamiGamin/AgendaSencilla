@@ -1,8 +1,10 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
     id("com.google.devtools.ksp") version "2.2.10-2.0.2"
+    id("kotlin-parcelize")
 }
-
+val room_version = "2.8.3"
 android {
     namespace = "com.SamiDev.agendasencilla"
     compileSdk {
@@ -35,8 +37,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    kotlinOptions {
+        jvmTarget = "11"
+
+    }
 }
-val room_version = "2.8.0"
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -53,7 +58,7 @@ dependencies {
     // Room
     implementation("androidx.room:room-runtime:$room_version")
     ksp("androidx.room:room-compiler:$room_version")
-    annotationProcessor("androidx.room:room-compiler:$room_version")
+//    annotationProcessor("androidx.room:room-compiler:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
     implementation("androidx.room:room-rxjava2:$room_version")
     implementation("androidx.room:room-rxjava3:$room_version")

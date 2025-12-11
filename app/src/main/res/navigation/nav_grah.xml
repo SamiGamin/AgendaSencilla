@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_contactosFavoritosFragment_to_configuracionFragment"
             app:destination="@id/configuracionFragment" />
+        <action
+            android:id="@+id/action_contactosFavoritosFragment_to_gestionContactoFragment"
+            app:destination="@id/gestionContactoFragment" />
     </fragment>
     <fragment
         android:id="@+id/configuracionFragment"
@@ -20,18 +23,23 @@
         android:label="Configuracion"
         tools:layout="@layout/fragment_configuracion" />
     <fragment
-        android:id="@+id/gestionContactoFragment2"
+        android:id="@+id/gestionContactoFragment"
         android:name="com.SamiDev.agendasencilla.ui.gestion.GestionContactoFragment"
         android:label="Gestionar Contacto"
-        tools:layout="@layout/fragment_gestion_contacto" />
+        tools:layout="@layout/fragment_gestion_contacto" >
+        <argument
+            android:name="contactId"
+            app:argType="integer"
+            android:defaultValue="-1" />
+    </fragment>
     <fragment
         android:id="@+id/listadocontactosFragment"
         android:name="com.SamiDev.agendasencilla.ui.listadocontactos.listadocontactosFragment"
         android:label="Contactos"
         tools:layout="@layout/fragment_listadocontactos" >
         <action
-            android:id="@+id/action_listadocontactosFragment_to_gestionContactoFragment2"
-            app:destination="@id/gestionContactoFragment2" />
+            android:id="@+id/action_listadocontactosFragment_to_gestionContactoFragment"
+            app:destination="@id/gestionContactoFragment" />
         <action
             android:id="@+id/action_listadocontactosFragment_to_configuracionFragment"
             app:destination="@id/configuracionFragment" />

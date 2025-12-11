@@ -1,37 +1,56 @@
-@file:Suppress("UNCHECKED_CAST")
-
 package com.SamiDev.agendasencilla.ui.listadocontactos
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.SamiDev.agendasencilla.data.database.AppDatabase
 import com.SamiDev.agendasencilla.data.database.Contacto
+import com.SamiDev.agendasencilla.data.preferencias.PreferenciasManager
 import com.SamiDev.agendasencilla.data.repositorio.ContactoRepositorio
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
-/**
- * ViewModel para el fragmento que muestra la lista de todos los contactos.
- * Se encarga de obtener los datos del repositorio y exponerlos al fragmento.
- *
- * @property contactoRepositorio El repositorio para acceder a los datos de los contactos.
- */
-class ListadocontactosViewModel(private val contactoRepositorio: ContactoRepositorio) : ViewModel() {
+class ListadocontactosViewModel(
+    private val contactoRepositorio: ContactoRepositorio,
+    private val preferenciasManager: PreferenciasManager
+) : ViewModel() {
 
-    /**
-     * Un [Flow] que emite la lista completa de contactos desde la base de datos.
-     * El fragmento observará este Flow para actualizar la UI.
-     */
-    val todosLosContactos: Flow<List<Contacto>> = contactoRepositorio.obtenerTodosLosContactos()
+    private val _terminoBusqueda = MutableStateFlow("")
+    val terminoBusqueda: StateFlow<String> = _terminoBusqueda.asStateFlow()
 
-    /**
-     * Actualiza el estado de favorito de un contacto.
-     * Crea una copia del contacto con el estado de 'esFavorito' invertido y lo actualiza en el repositorio.
-     *
-     * @param contacto El [Contacto] cuyo estado de favorito se va a actualizar.
-     */
+    val todosLosContactos: Flow<List<Contacto>> = terminoBusqueda.combine(contactoRepositorio.obtenerTodosLosContactos()) { query, contactos ->
+        if (query.isBlank()) {
+            contactos
+        } else {
+            contactos.filter {
+                it.nombreCompleto.contains(query, ignoreCase = true) || it.numeroTelefono.contains(query)
+            }
+        }
+    }
+
+    private val _lecturaActivada = MutableStateFlow(false)
+    val lecturaActivada: StateFlow<Boolean> = _lecturaActivada.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            preferenciasManager.lecturaEnVozActivadaFlow.collectLatest { activada ->
+                Log.d("ListadoContactosVM", "Preferencia de lectura en voz actualizada a: $activada")
+                _lecturaActivada.value = activada
+            }
+        }
+    }
+
+    fun actualizarTerminoBusqueda(query: String) {
+        _terminoBusqueda.value = query
+    }
+
     fun actualizarEstadoFavorito(contacto: Contacto) {
         viewModelScope.launch {
             val contactoActualizado = contacto.copy(esFavorito = !contacto.esFavorito)
@@ -40,19 +59,14 @@ class ListadocontactosViewModel(private val contactoRepositorio: ContactoReposit
     }
 }
 
-/**
- * Factory para crear instancias de [ListadocontactosViewModel].
- * Es necesario para poder pasar el [Application] (y por ende el [ContactoRepositorio]) al ViewModel.
- *
- * @property application La instancia de la aplicación, necesaria para obtener la base de datos.
- */
 class ListadocontactosViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ListadocontactosViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             val contactoDao = AppDatabase.obtenerInstancia(application).contactoDao()
             val repositorio = ContactoRepositorio(contactoDao)
-            return ListadocontactosViewModel(repositorio) as T
+            val preferenciasManager = PreferenciasManager.getInstance(application.applicationContext)
+            return ListadocontactosViewModel(repositorio, preferenciasManager) as T
         }
         throw IllegalArgumentException("Clase ViewModel desconocida: " + modelClass.name)
     }

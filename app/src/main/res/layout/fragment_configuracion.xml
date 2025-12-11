@@ -126,4 +126,26 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Sección de Accesibilidad (Lectura en Voz) -->
+    <TextView
+        android:id="@+id/tv_titulo_accesibilidad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Accesibilidad"
+        android:textAppearance="?attr/textAppearanceTitleMedium"
+        app:layout_constraintTop_toBottomOf="@+id/view_separador_fuente"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switch_lectura_en_voz"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Leer nombres en voz alta"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_titulo_accesibilidad" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

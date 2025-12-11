@@ -1,62 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:layout_margin="8dp"
     app:cardCornerRadius="16dp"
-    app:cardElevation="2dp">
-    <!-- LinearLayout para organizar los elementos verticalmente. -->
+    app:cardElevation="2dp"
+    android:clickable="true"
+    android:focusable="true">
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:gravity="center_horizontal"
-        android:padding="16dp">
+        android:padding="6dp">
 
-        <!-- Imagen del contacto, hecha circular con ShapeableImageView. -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/ivFotoContacto"
             android:layout_width="120dp"
             android:layout_height="120dp"
             android:scaleType="centerCrop"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
             tools:src="@tools:sample/avatars" />
 
-        <!-- Nombre del contacto. -->
+        <!-- Botón para Editar Contacto. -->
+        <ImageButton
+            android:id="@+id/btnEditarContacto"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Editar Contacto"
+            android:src="@drawable/ic_edit"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="?attr/colorOnSurface" />
+
         <TextView
             android:id="@+id/tvNombreContacto"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
             android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textSize="30sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="@+id/ivFotoContacto"
-            app:layout_constraintStart_toStartOf="@+id/ivFotoContacto"
-            app:layout_constraintTop_toBottomOf="@+id/ivFotoContacto"
-            tools:text="Abuela Elena" />
+            app:layout_constraintBottom_toTopOf="@+id/btnLlamar"
+            app:layout_constraintEnd_toStartOf="@+id/btnEditarContacto"
+            app:layout_constraintStart_toEndOf="@+id/ivFotoContacto"
+            app:layout_constraintTop_toTopOf="@+id/ivFotoContacto"
+            tools:text="Abuela Elena"
+            tools:ignore="ContentDescription" />
 
-
-
-            <!-- Botón de Llamar. -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLlamar"
             style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="78dp"
+            android:layout_width="98dp"
             android:layout_height="48dp"
-            app:iconPadding="0dp"
+            android:layout_marginStart="16dp"
+            android:contentDescription="Llamar"
             app:icon="@drawable/ic_call"
             app:iconGravity="textStart"
+            app:iconPadding="0dp"
             app:layout_constraintBottom_toBottomOf="@+id/ivFotoContacto"
-            app:layout_constraintEnd_toEndOf="@+id/ivFotoContacto"
-            app:layout_constraintStart_toStartOf="@+id/ivFotoContacto" />
-
-
-
+            app:layout_constraintEnd_toEndOf="@+id/tvNombreContacto"
+            app:layout_constraintStart_toEndOf="@+id/ivFotoContacto" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

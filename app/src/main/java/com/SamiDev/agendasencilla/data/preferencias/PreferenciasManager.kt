@@ -2,96 +2,102 @@ package com.SamiDev.agendasencilla.data.preferencias
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
-/**
- * Enum para representar las opciones de tamaño de fuente disponibles.
- */
-enum class OpcionTamanoFuente {
-    NORMAL,
-    GRANDE,
-    MAS_GRANDE
+// Definir el enum para las opciones de tamaño de fuente
+enum class OpcionTamanoFuente(val escala: Float) {
+    NORMAL(0.1f),
+    GRANDE(0.5f),
+    MAS_GRANDE(1.0f)
 }
 
 /**
- * Gestiona el acceso a las SharedPreferences de la aplicación.
- * Permite guardar y recuperar configuraciones persistentes del usuario.
- *
- * @property contexto El contexto de la aplicación, necesario para acceder a SharedPreferences.
+ * Gestor de preferencias de la aplicación.
+ * Centraliza el acceso y modificación de las SharedPreferences.
  */
-class PreferenciasManager(private val contexto: Context) {
+class PreferenciasManager private constructor(context: Context) {
 
-    private val preferencias: SharedPreferences
-        get() = contexto.getSharedPreferences(NOMBRE_ARCHIVO_PREFERENCIAS, Context.MODE_PRIVATE)
+    private val sharedPreferences: SharedPreferences = context.getSharedPreferences(PREFERENCIAS_NOMBRE, Context.MODE_PRIVATE)
 
-    // --- Preferencias de Tema ---
-    /**
-     * Guarda el estado de la preferencia del tema oscuro.
-     * Al guardar explícitamente, se establece una preferencia del usuario.
-     *
-     * @param habilitado True si el tema oscuro debe estar habilitado, false en caso contrario.
-     */
-    fun guardarTemaOscuro(habilitado: Boolean) {
-        preferencias.edit().putBoolean(CLAVE_TEMA_OSCURO, habilitado).apply()
-    }
+    companion object {
+        private const val TAG = "PreferenciasManager"
+        private const val PREFERENCIAS_NOMBRE = "preferencias_agenda"
+        private const val PREF_TEMA_OSCURO = "pref_tema_oscuro"
+        private const val PREF_TIENE_TEMA_GUARDADO = "pref_tiene_tema_guardado"
+        private const val PREF_TAMANO_FUENTE = "pref_tamano_fuente"
+        private const val PREF_LECTURA_EN_VOZ = "pref_lectura_en_voz_activada"
 
-    /**
-     * Obtiene el estado actual de la preferencia del tema oscuro guardada por el usuario.
-     *
-     * @return True si el tema oscuro está habilitado según la preferencia explícita del usuario, 
-     *         false por defecto si no se ha guardado una preferencia explícita.
-     */
-    fun obtenerTemaOscuro(): Boolean {
-        return preferencias.getBoolean(CLAVE_TEMA_OSCURO, false) 
-    }
+        @Volatile
+        private var INSTANCE: PreferenciasManager? = null
 
-    /**
-     * Verifica si el usuario ha guardado explícitamente una preferencia para el tema.
-     *
-     * @return True si la preferencia existe, false en caso contrario.
-     */
-    fun tienePreferenciaTemaGuardada(): Boolean {
-        return preferencias.contains(CLAVE_TEMA_OSCURO)
-    }
-
-    /**
-     * Elimina la preferencia explícita del tema guardada por el usuario.
-     * Esto permite que la aplicación vuelva a seguir la configuración del sistema.
-     */
-    fun borrarPreferenciaTema() {
-        preferencias.edit().remove(CLAVE_TEMA_OSCURO).apply()
-    }
-
-    // --- Preferencias de Tamaño de Fuente ---
-    /**
-     * Guarda la opción de tamaño de fuente seleccionada por el usuario.
-     *
-     * @param opcion La [OpcionTamanoFuente] seleccionada.
-     */
-    fun guardarOpcionTamanoFuente(opcion: OpcionTamanoFuente) {
-        preferencias.edit().putString(CLAVE_TAMANO_FUENTE, opcion.name).apply()
-    }
-
-    /**
-     * Obtiene la opción de tamaño de fuente guardada por el usuario.
-     *
-     * @return La [OpcionTamanoFuente] guardada, o [OpcionTamanoFuente.NORMAL] si no hay ninguna guardada.
-     */
-    fun obtenerOpcionTamanoFuente(): OpcionTamanoFuente {
-        val nombreOpcion = preferencias.getString(CLAVE_TAMANO_FUENTE, OpcionTamanoFuente.NORMAL.name)
-        return try {
-            OpcionTamanoFuente.valueOf(nombreOpcion ?: OpcionTamanoFuente.NORMAL.name)
-        } catch (e: IllegalArgumentException) {
-            OpcionTamanoFuente.NORMAL // En caso de un valor inválido guardado, volver al normal
+        fun getInstance(context: Context): PreferenciasManager {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: PreferenciasManager(context.applicationContext).also {
+                    INSTANCE = it
+                }
+            }
         }
     }
 
-    companion object {
-        private const val NOMBRE_ARCHIVO_PREFERENCIAS = "preferencias_agenda_sencilla"
+    // Flow para la preferencia de lectura en voz
+    private val _lecturaEnVozActivadaFlow = MutableStateFlow(obtenerPreferenciaLecturaEnVoz())
+    val lecturaEnVozActivadaFlow: StateFlow<Boolean> = _lecturaEnVozActivadaFlow.asStateFlow()
 
-        // Claves para las preferencias de TEMA
-        const val CLAVE_TEMA_OSCURO = "clave_tema_explicito_usuario"
+    // --- Preferencias de Tema ---
 
-        // Claves para las preferencias de TAMAÑO DE FUENTE
-        const val CLAVE_TAMANO_FUENTE = "clave_tamano_fuente"
+    fun guardarTemaOscuro(esOscuro: Boolean) {
+        sharedPreferences.edit().putBoolean(PREF_TEMA_OSCURO, esOscuro).apply()
+        sharedPreferences.edit().putBoolean(PREF_TIENE_TEMA_GUARDADO, true).apply()
+    }
+
+    fun obtenerTemaOscuro(): Boolean {
+        return sharedPreferences.getBoolean(PREF_TEMA_OSCURO, false)
+    }
+
+    fun tienePreferenciaTemaGuardada(): Boolean {
+        return sharedPreferences.getBoolean(PREF_TIENE_TEMA_GUARDADO, false)
+    }
+
+    fun borrarPreferenciaTema() {
+        sharedPreferences.edit().remove(PREF_TEMA_OSCURO).remove(PREF_TIENE_TEMA_GUARDADO).apply()
+    }
+
+    // --- Preferencias de Tamaño de Fuente ---
+
+    fun guardarOpcionTamanoFuente(opcion: OpcionTamanoFuente) {
+        sharedPreferences.edit().putString(PREF_TAMANO_FUENTE, opcion.name).apply()
+    }
+
+    fun obtenerOpcionTamanoFuente(): OpcionTamanoFuente {
+        val nombreOpcion = sharedPreferences.getString(PREF_TAMANO_FUENTE, OpcionTamanoFuente.NORMAL.name)
+        return try {
+            OpcionTamanoFuente.valueOf(nombreOpcion ?: OpcionTamanoFuente.NORMAL.name)
+        } catch (e: IllegalArgumentException) {
+            OpcionTamanoFuente.NORMAL
+        }
+    }
+
+    // --- Preferencias de Lectura en Voz ---
+
+    /**
+     * Guarda la preferencia del usuario para activar o desactivar la lectura en voz alta.
+     */
+    fun guardarPreferenciaLecturaEnVoz(activada: Boolean) {
+        sharedPreferences.edit().putBoolean(PREF_LECTURA_EN_VOZ, activada).apply()
+        _lecturaEnVozActivadaFlow.value = activada // Actualizar el StateFlow
+        Log.d(TAG, "Preferencia de lectura en voz guardada: $activada")
+    }
+
+    /**
+     * Obtiene el estado actual de la preferencia de lectura en voz alta.
+     * Por defecto, estará desactivada.
+     */
+    fun obtenerPreferenciaLecturaEnVoz(): Boolean {
+        val activada = sharedPreferences.getBoolean(PREF_LECTURA_EN_VOZ, false)
+        Log.d(TAG, "Preferencia de lectura en voz obtenida: $activada")
+        return activada
     }
 }

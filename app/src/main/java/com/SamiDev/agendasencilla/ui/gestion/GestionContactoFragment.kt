@@ -17,7 +17,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import com.SamiDev.agendasencilla.R // Necesario para placeholder/error de Glide si se usan.
+import com.SamiDev.agendasencilla.R
 import com.SamiDev.agendasencilla.data.database.Contacto
 import com.SamiDev.agendasencilla.databinding.FragmentGestionContactoBinding
 import com.bumptech.glide.Glide
@@ -37,10 +37,18 @@ class GestionContactoFragment : Fragment() {
     private lateinit var selectorImagenLauncher: ActivityResultLauncher<String>
     private var fotoSeleccionadaUri: Uri? = null
 
+    private var contactoId: Int = -1
+    private var esModoEdicion = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Launcher para solicitar permiso de lectura de contactos
+        // Recupera el ID del contacto desde los argumentos de navegación.
+        arguments?.let {
+            contactoId = it.getInt("contactId", -1)
+            esModoEdicion = contactoId != -1
+        }
+
         requestPermisoLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
                 viewModel.importarContactosDelDispositivo()
@@ -49,16 +57,10 @@ class GestionContactoFragment : Fragment() {
             }
         }
 
-        // Launcher para seleccionar imagen de la galería
         selectorImagenLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let {
                 fotoSeleccionadaUri = it
-                Glide.with(this)
-                    .load(it)
-                    .placeholder(R.drawable.ic_perm_identity) // Asume que tienes este drawable
-                    .error(R.drawable.ic_perm_identity) // Asume que tienes este drawable
-                    .circleCrop() // Para hacerlo circular si la imagen original no lo es
-                    .into(binding.ivFotoContactoDetalle)
+                cargarImagenConGlide(it)
             }
         }
     }
@@ -76,26 +78,60 @@ class GestionContactoFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         configurarListeners()
         configurarObservadoresDeImportacion()
-        // Cargar imagen por defecto si no hay ninguna seleccionada aún
-        Glide.with(this)
-            .load(fotoSeleccionadaUri) // Si es null, cargará el error/placeholder
-            .placeholder(R.drawable.ic_perm_identity)
-            .error(R.drawable.ic_perm_identity)
-            .circleCrop()
-            .into(binding.ivFotoContactoDetalle)
+
+        if (esModoEdicion) {
+            prepararUIModoEdicion()
+            viewModel.cargarContacto(contactoId)
+            observarContactoCargado()
+        } else {
+            cargarImagenPorDefecto()
+        }
     }
 
     private fun configurarListeners() {
         binding.btnGuardarContacto.setOnClickListener {
-            guardarNuevoContacto()
+            guardarContacto()
         }
 
         binding.btnImportarContactos.setOnClickListener {
             solicitarPermisoYImportarContactos()
         }
 
+        binding.ivFotoContactoDetalle.setOnClickListener {
+            selectorImagenLauncher.launch("image/*")
+        }
+
         binding.btnSeleccionarFoto.setOnClickListener {
             selectorImagenLauncher.launch("image/*")
+        }
+    }
+
+    private fun prepararUIModoEdicion() {
+        binding.btnGuardarContacto.text = "Actualizar Contacto"
+        binding.btnImportarContactos.visibility = View.GONE
+    }
+
+    private fun observarContactoCargado() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.contactoCargado.collect { contacto ->
+                    contacto?.let { poblarDatosEnUI(it) }
+                }
+            }
+        }
+    }
+
+    private fun poblarDatosEnUI(contacto: Contacto) {
+        binding.etNombreCompleto.setText(contacto.nombreCompleto)
+        binding.etNumeroTelefono.setText(contacto.numeroTelefono)
+        binding.etNotasContacto.setText(contacto.notas)
+        binding.switchFavorito.isChecked = contacto.esFavorito
+
+        if (contacto.fotoUri != null) {
+            fotoSeleccionadaUri = Uri.parse(contacto.fotoUri)
+            cargarImagenConGlide(fotoSeleccionadaUri)
+        } else {
+            cargarImagenPorDefecto()
         }
     }
 
@@ -138,23 +174,28 @@ class GestionContactoFragment : Fragment() {
         }
     }
 
-    private fun guardarNuevoContacto() {
+    private fun guardarContacto() {
         val nombre = binding.etNombreCompleto.text.toString().trim()
         val telefono = binding.etNumeroTelefono.text.toString().trim()
         val notas = binding.etNotasContacto.text.toString().trim()
         val esFavorito = binding.switchFavorito.isChecked
 
         if (validarEntradas(nombre, telefono)) {
-            val nuevoContacto = Contacto(
+            val contactoParaGuardar = Contacto(
+                id = if (esModoEdicion) contactoId else 0,
                 nombreCompleto = nombre,
                 numeroTelefono = telefono,
-                fotoUri = fotoSeleccionadaUri?.toString(), // Guardar la URI de la imagen como String
+                fotoUri = fotoSeleccionadaUri?.toString(),
                 esFavorito = esFavorito,
                 notas = notas
             )
-            viewModel.guardarContacto(nuevoContacto)
-            Toast.makeText(requireContext(), "Contacto guardado exitosamente", Toast.LENGTH_SHORT).show()
+
+            viewModel.guardarContacto(contactoParaGuardar)
+
+            val mensaje = if (esModoEdicion) "Contacto actualizado" else "Contacto guardado"
+            Toast.makeText(requireContext(), mensaje, Toast.LENGTH_SHORT).show()
             findNavController().popBackStack()
+
         } else {
             Toast.makeText(requireContext(), "Por favor, complete el nombre y el teléfono", Toast.LENGTH_LONG).show()
         }
@@ -163,6 +204,20 @@ class GestionContactoFragment : Fragment() {
     private fun validarEntradas(nombre: String, telefono: String): Boolean {
         return nombre.isNotEmpty() && telefono.isNotEmpty()
     }
+
+    private fun cargarImagenConGlide(uri: Uri?) {
+        Glide.with(this)
+            .load(uri)
+            .placeholder(R.drawable.ic_perm_identity)
+            .error(R.drawable.ic_perm_identity)
+            .circleCrop()
+            .into(binding.ivFotoContactoDetalle)
+    }
+
+    private fun cargarImagenPorDefecto() {
+        cargarImagenConGlide(null)
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

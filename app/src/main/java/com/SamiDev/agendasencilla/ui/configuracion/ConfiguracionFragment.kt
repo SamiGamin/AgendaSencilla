@@ -1,6 +1,7 @@
 package com.SamiDev.agendasencilla.ui.configuracion
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +16,10 @@ import com.SamiDev.agendasencilla.databinding.FragmentConfiguracionBinding
 import kotlinx.coroutines.launch
 
 class ConfiguracionFragment : Fragment() {
+
+    companion object {
+        private const val TAG = "ConfiguracionFragment"
+    }
 
     private var _binding: FragmentConfiguracionBinding? = null
     private val binding get() = _binding!!
@@ -35,7 +40,8 @@ class ConfiguracionFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         observarOpcionTemaSeleccionada()
         observarOpcionTamanoFuenteSeleccionada()
-        observarEventoRecrearActividad() // Añadir observador para el evento de recreación
+        observarPreferenciaLecturaVoz() // Observar el estado de la preferencia de lectura
+        observarEventoRecrearActividad()
         configurarListeners()
     }
 
@@ -69,6 +75,24 @@ class ConfiguracionFragment : Fragment() {
                         OpcionTamanoFuente.NORMAL -> binding.toggleGroupTamanoFuente.check(R.id.btn_tamano_normal)
                         OpcionTamanoFuente.GRANDE -> binding.toggleGroupTamanoFuente.check(R.id.btn_tamano_grande)
                         OpcionTamanoFuente.MAS_GRANDE -> binding.toggleGroupTamanoFuente.check(R.id.btn_tamano_mas_grande)
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Observa el estado de la preferencia de lectura en voz desde el ViewModel
+     * y actualiza la UI (el SwitchMaterial) para que refleje el valor actual.
+     */
+    private fun observarPreferenciaLecturaVoz() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.preferenciaLecturaVozActiva.collect { activada ->
+                    Log.d(TAG, "UI observing new voice preference state: $activada")
+                    // Asegurarse de no entrar en un bucle si el listener también actualiza el ViewModel
+                    if (binding.switchLecturaEnVoz.isChecked != activada) {
+                        binding.switchLecturaEnVoz.isChecked = activada
                     }
                 }
             }
@@ -119,12 +143,18 @@ class ConfiguracionFragment : Fragment() {
                     R.id.btn_tamano_mas_grande -> OpcionTamanoFuente.MAS_GRANDE
                     else -> null
                 }
-                nuevaOpcion?.let { // CORREGIDO: novaOpcion a nuevaOpcion
+                nuevaOpcion?.let {
                     if (viewModel.opcionTamanoFuenteSeleccionada.value != it) {
                         viewModel.actualizarOpcionTamanoFuente(it)
                     }
                 }
             }
+        }
+
+        // Listener para el Switch de lectura en voz
+        binding.switchLecturaEnVoz.setOnCheckedChangeListener { _, isChecked ->
+            Log.d(TAG, "Switch onCheckedChanged listener fired. New state: $isChecked")
+            viewModel.actualizarPreferenciaLecturaEnVoz(isChecked)
         }
     }
 

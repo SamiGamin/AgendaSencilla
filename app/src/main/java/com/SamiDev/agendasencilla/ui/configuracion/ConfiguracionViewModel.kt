@@ -1,6 +1,7 @@
 package com.SamiDev.agendasencilla.ui.configuracion
 
 import android.app.Application
+import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -36,6 +37,10 @@ class ConfiguracionViewModel(
     private val preferenciasManager: PreferenciasManager
 ) : ViewModel() {
 
+    companion object {
+        private const val TAG = "ConfiguracionViewModel"
+    }
+
     // --- Preferencias de Tema ---
     private val _opcionTemaSeleccionada: MutableStateFlow<OpcionTema>
     val opcionTemaSeleccionada: StateFlow<OpcionTema>
@@ -43,6 +48,10 @@ class ConfiguracionViewModel(
     // --- Preferencias de Tamaño de Fuente ---
     private val _opcionTamanoFuenteSeleccionada: MutableStateFlow<OpcionTamanoFuente>
     val opcionTamanoFuenteSeleccionada: StateFlow<OpcionTamanoFuente>
+
+    // --- Preferencia de Lectura en Voz ---
+    private val _preferenciaLecturaVozActiva = MutableStateFlow(false)
+    val preferenciaLecturaVozActiva: StateFlow<Boolean> = _preferenciaLecturaVozActiva.asStateFlow()
 
     // --- Evento para recrear la actividad ---
     private val _eventoRecrearActividad = MutableSharedFlow<Unit>()
@@ -56,6 +65,14 @@ class ConfiguracionViewModel(
         // Inicialización para Tamaño de Fuente
         _opcionTamanoFuenteSeleccionada = MutableStateFlow(preferenciasManager.obtenerOpcionTamanoFuente())
         opcionTamanoFuenteSeleccionada = _opcionTamanoFuenteSeleccionada.asStateFlow()
+
+        // Inicialización para Lectura en Voz
+        viewModelScope.launch {
+            preferenciasManager.lecturaEnVozActivadaFlow.collect { activada ->
+                Log.d(TAG, "Nuevo valor de preferencia de voz recibido: $activada")
+                _preferenciaLecturaVozActiva.value = activada
+            }
+        }
     }
 
     private fun obtenerOpcionTemaActual(): OpcionTema {
@@ -104,6 +121,17 @@ class ConfiguracionViewModel(
             }
         }
     }
+
+    /**
+     * Actualiza y guarda la preferencia del usuario para la lectura en voz alta.
+     */
+    fun actualizarPreferenciaLecturaEnVoz(activada: Boolean) {
+        Log.d(TAG, "ViewModel solicita actualizar preferencia de voz a: $activada")
+        if (_preferenciaLecturaVozActiva.value != activada) {
+            _preferenciaLecturaVozActiva.value = activada
+            preferenciasManager.guardarPreferenciaLecturaEnVoz(activada)
+        }
+    }
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -111,7 +139,7 @@ class ConfiguracionViewModelFactory(private val application: Application) : View
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ConfiguracionViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            val preferenciasManager = PreferenciasManager(application.applicationContext)
+            val preferenciasManager = PreferenciasManager.getInstance(application.applicationContext)
             return ConfiguracionViewModel(application, preferenciasManager) as T
         }
         throw IllegalArgumentException("Clase ViewModel desconocida: " + modelClass.name)

@@ -1,34 +1,27 @@
 package com.SamiDev.agendasencilla.ui.listadocontactos
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.SamiDev.agendasencilla.R // Importar R para acceder a los drawables
+import com.SamiDev.agendasencilla.R
 import com.SamiDev.agendasencilla.data.database.Contacto
 import com.SamiDev.agendasencilla.databinding.ItemContactoListaBinding
-import com.bumptech.glide.Glide // Importar Glide
+import com.SamiDev.agendasencilla.util.GestorDeLlamadas
+import com.SamiDev.agendasencilla.util.LectorDeVoz
+import com.bumptech.glide.Glide
 
-/**
- * Adaptador para el RecyclerView que muestra la lista de contactos.
- * Utiliza ListAdapter con DiffUtil para un rendimiento eficiente al actualizar la lista.
- *
- * @param onItemClicked Lambda que se ejecuta al hacer clic en un ítem.
- * @param onFavoritoClicked Lambda que se ejecuta al hacer clic en el botón de favorito de un ítem.
- */
 class ContactoAdapter(
     private val onItemClicked: (Contacto) -> Unit,
-    private val onFavoritoClicked: (Contacto) -> Unit // Nueva lambda para el clic en favorito
+    private val onFavoritoClicked: (Contacto) -> Unit
 ) :
     ListAdapter<Contacto, ContactoAdapter.ContactoViewHolder>(DiffCallback) {
 
-    /**
-     * ViewHolder para cada ítem de contacto.
-     * Contiene las referencias a las vistas definidas en item_contacto_lista.xml.
-     */
+    private var lecturaContactoHabilitada: Boolean = false
+
     inner class ContactoViewHolder(private val binding: ItemContactoListaBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
@@ -37,11 +30,28 @@ class ContactoAdapter(
             itemView.setOnClickListener {
                 val position = bindingAdapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    onItemClicked(getItem(position))
+                    val contacto = getItem(position)
+                    Log.d("ContactoAdapter", "Clic en item. Lectura habilitada: $lecturaContactoHabilitada")
+                    // Leer el nombre si la preferencia está activada
+                    if (lecturaContactoHabilitada) {
+                        LectorDeVoz.obtenerInstancia().leerEnVozAlta(contacto.nombreCompleto)
+                    }
+                    // Ejecutar la acción de edición/navegación
+                    onItemClicked(contacto)
                 }
             }
-            binding.btnLlamar.setOnClickListener {
-                Toast.makeText(itemView.context, "Llamando...", Toast.LENGTH_SHORT).show()
+
+            // Listener para llamar al hacer clic en la foto
+            binding.ivFotoContacto.setOnClickListener {
+                val position = bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    val contacto = getItem(position)
+                    val textoParaLeer = "Llamando a ${contacto.nombreCompleto}"
+                    // Siempre leer en voz alta y luego llamar
+                    LectorDeVoz.obtenerInstancia().leerEnVozAlta(textoParaLeer, onDone = {
+                        GestorDeLlamadas.llamar(itemView.context, contacto.numeroTelefono)
+                    })
+                }
             }
 
             // Listener para el clic en el botón de favorito
@@ -53,21 +63,16 @@ class ContactoAdapter(
             }
         }
 
-        /**
-         * Vincula los datos de un objeto [Contacto] a las vistas del layout del ítem.
-         * @param contacto El contacto a mostrar.
-         */
         fun bind(contacto: Contacto) {
             binding.tvNombreContacto.text = contacto.nombreCompleto
             binding.tvNumeroTelefono.text = contacto.numeroTelefono
-            binding.btnLlamar.setIconTintResource(R.color.md_theme_onPrimaryFixed)
-            binding.btnLlamar.backgroundTintList = ContextCompat.getColorStateList(itemView.context, R.color.md_theme_primary)
+            binding.ivFotoContacto.backgroundTintList = ContextCompat.getColorStateList(itemView.context, R.color.md_theme_primary)
             // Cargar imagen del contacto con Glide
             Glide.with(itemView.context)
-                .load(contacto.fotoUri) // fotoUri es un String?, Glide lo maneja bien.
-                .placeholder(R.drawable.ic_face) // Placeholder
-                .error(R.drawable.ic_face)       // Imagen de error
-                .circleCrop() // Para hacer la imagen circular
+                .load(contacto.fotoUri)
+                .placeholder(R.drawable.ic_face)
+                .error(R.drawable.ic_face)
+                .circleCrop()
                 .into(binding.ivFotoContacto)
 
             // Actualizar el ícono y el fondo del botón de favorito según el estado del contacto
@@ -99,6 +104,16 @@ class ContactoAdapter(
     override fun onBindViewHolder(holder: ContactoViewHolder, position: Int) {
         val contactoActual = getItem(position)
         holder.bind(contactoActual)
+    }
+
+    /**
+     * Método público para actualizar el estado de la preferencia desde el Fragment.
+     */
+    fun actualizarPreferenciaLectura(estaActivada: Boolean) {
+        if (lecturaContactoHabilitada != estaActivada) {
+            Log.d("ContactoAdapter", "Adapter recibió nueva preferencia de lectura: $estaActivada")
+            lecturaContactoHabilitada = estaActivada
+        }
     }
 
     companion object DiffCallback : DiffUtil.ItemCallback<Contacto>() {

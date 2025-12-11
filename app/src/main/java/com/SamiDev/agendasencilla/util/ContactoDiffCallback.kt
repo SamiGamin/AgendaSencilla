@@ -32,7 +32,7 @@ class ContactoDiffCallback : DiffUtil.ItemCallback<Contacto>() {
      */
     override fun areContentsTheSame(oldItem: Contacto, newItem: Contacto): Boolean {
         // Compara todos los campos relevantes del objeto Contacto.
-        // Si la clase Contacto es una data class, la comparación por igualdad (==) ya hace esto.
+
         return oldItem == newItem
     }
 }
