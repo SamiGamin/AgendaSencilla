@@ -3,11 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/accion_buscar"
-        android:icon="@android:drawable/ic_menu_search"
-        android:title="Buscar"
+        android:id="@+id/expanded_menu"
+        android:icon="@drawable/more_vert"
+        android:title="menu"
         app:showAsAction="ifRoom|collapseActionView"
-        app:actionViewClass="androidx.appcompat.widget.SearchView" />
+     />
 
     <!-- Aquí puedes agregar más ítems de menú si los necesitas -->
 

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:title="Llamadas salientes"
+        android:icon="@drawable/call_made"
+        android:id="@+id/llamada_saliente"
+        app:showAsAction="never" />
+    <item android:title="Llamadas entrantes"
+        android:icon="@drawable/call_received"
+        android:id="@+id/llamada_entrante"
+        app:showAsAction="never" />
+    <item android:title="Llamadas perdidas"
+        android:icon="@drawable/call_missed"
+        android:id="@+id/llamada_perdida"
+        app:showAsAction="never"/>
+    <item android:title="Eliminar reguistro de llamadas"
+        android:icon="@drawable/delete"
+        android:id="@+id/eliminar_registro"
+        app:showAsAction="never"/>
+</menu>

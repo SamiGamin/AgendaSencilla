@@ -7,6 +7,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
@@ -103,7 +104,9 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.contactosFavoritosFragment,
-                R.id.listadocontactosFragment
+                R.id.listadocontactosFragment,
+                R.id.marcarFragment,
+
             )
         )
 
@@ -146,7 +149,13 @@ class MainActivity : AppCompatActivity() {
                     binding.fabAnadirContacto.show()
                 }
                 R.id.marcarFragment -> {
-
+                    binding.toolbar.visibility = View.VISIBLE
+                    binding.fabAnadirContacto.hide()
+                }
+                R.id.configuracionFragment -> {
+                    binding.fabAnadirContacto.hide()
+                }
+                R.id.gestionContactoFragment -> {
                     binding.fabAnadirContacto.hide()
                 }
                 else -> {

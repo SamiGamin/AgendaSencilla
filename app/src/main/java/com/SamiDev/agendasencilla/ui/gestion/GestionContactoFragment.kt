@@ -5,12 +5,17 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -61,20 +66,26 @@ class GestionContactoFragment : Fragment() {
             }
         )
 
-        requestPermisoLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            if (isGranted) {
-                viewModel.importarContactosDelDispositivo()
-            } else {
-                Snackbar.make(binding.root, "El permiso para leer contactos es necesario para la importación.", Snackbar.LENGTH_LONG).show()
+        requestPermisoLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+                if (isGranted) {
+                    viewModel.importarContactosDelDispositivo()
+                } else {
+                    Snackbar.make(
+                        binding.root,
+                        "El permiso para leer contactos es necesario para la importación.",
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
             }
-        }
 
-        selectorImagenLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            uri?.let {
-                fotoSeleccionadaUri = it
-                cargarImagenConGlide(it)
+        selectorImagenLauncher =
+            registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+                uri?.let {
+                    fotoSeleccionadaUri = it
+                    cargarImagenConGlide(it)
+                }
             }
-        }
     }
 
     override fun onCreateView(
@@ -89,7 +100,8 @@ class GestionContactoFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         configurarListeners()
-//        configurarObservadoresDeImportacion()
+        setupMenu()
+
 
         if (esModoEdicion) {
             prepararUIModoEdicion()
@@ -98,6 +110,21 @@ class GestionContactoFragment : Fragment() {
         } else {
             cargarImagenPorDefecto()
         }
+    }
+
+    private fun setupMenu() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menu.clear()
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return false
+            }
+
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+
     }
 
     private fun configurarListeners() {
@@ -176,25 +203,25 @@ class GestionContactoFragment : Fragment() {
 //        }
 //    }
 
-/*    private fun configurarObservadoresDeImportacion() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.importacionEnCurso.collect { enCurso ->
-                        binding.btnImportarContactos.isEnabled = !enCurso
+    /*    private fun configurarObservadoresDeImportacion() {
+            viewLifecycleOwner.lifecycleScope.launch {
+                repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    launch {
+                        viewModel.importacionEnCurso.collect { enCurso ->
+                            binding.btnImportarContactos.isEnabled = !enCurso
+                        }
                     }
-                }
-                launch {
-                    viewModel.estadoImportacion.collect { mensaje ->
-                        mensaje?.let {
-                            Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
-                            viewModel.limpiarEstadoImportacion()
+                    launch {
+                        viewModel.estadoImportacion.collect { mensaje ->
+                            mensaje?.let {
+                                Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
+                                viewModel.limpiarEstadoImportacion()
+                            }
                         }
                     }
                 }
             }
-        }
-    }*/
+        }*/
 
     private fun guardarContacto() {
         val nombre = binding.etNombreCompleto.text.toString().trim()
@@ -219,7 +246,11 @@ class GestionContactoFragment : Fragment() {
             findNavController().popBackStack()
 
         } else {
-            Toast.makeText(requireContext(), "Por favor, complete el nombre y el teléfono", Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                requireContext(),
+                "Por favor, complete el nombre y el teléfono",
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 
