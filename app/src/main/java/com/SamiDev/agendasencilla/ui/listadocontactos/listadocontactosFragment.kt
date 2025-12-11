@@ -21,6 +21,7 @@ import com.SamiDev.agendasencilla.util.LectorDeVoz
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+@Suppress("DEPRECATION")
 class listadocontactosFragment : Fragment() {
 
     private var _binding: FragmentListadocontactosBinding? = null
@@ -51,9 +52,10 @@ class listadocontactosFragment : Fragment() {
 
         configurarRecyclerView()
         configurarObservadores()
-        configurarListeners()
+
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         val searchItem = menu.findItem(R.id.action_search)
@@ -104,11 +106,7 @@ class listadocontactosFragment : Fragment() {
         }
     }
 
-    private fun configurarListeners() {
-        binding.fabAnadirContacto.setOnClickListener {
-            findNavController().navigate(R.id.action_listadocontactosFragment_to_gestionContactoFragment)
-        }
-    }
+
 
     private fun manejarClicEnContacto(contacto: Contacto) {
 //        Toast.makeText(requireContext(), "Contacto seleccionado: ${contacto.nombreCompleto}", Toast.LENGTH_SHORT).show()

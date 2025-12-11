@@ -23,6 +23,7 @@ import com.SamiDev.agendasencilla.util.adapter.FavoritosAdapter
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+@Suppress("DEPRECATION")
 class ContactosFavoritosFragment : Fragment() {
 
     private var _binding: FragmentContactosFavoritosBinding? = null
@@ -44,7 +45,7 @@ class ContactosFavoritosFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentContactosFavoritosBinding.inflate(inflater, container, false)
-        setHasOptionsMenu(true) // Indicar que este fragmento tiene su propio menú de opciones
+        this.setHasOptionsMenu(true) // Indicar que este fragmento tiene su propio menú de opciones
         return binding.root
     }
 
@@ -59,6 +60,7 @@ class ContactosFavoritosFragment : Fragment() {
         configurarObservadores()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         val searchItem = menu.findItem(R.id.action_search)

@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.SamiDev.agendasencilla.data.database.AppDatabase
 import com.SamiDev.agendasencilla.data.database.Contacto
 import com.SamiDev.agendasencilla.data.preferencias.PreferenciasManager
-import com.SamiDev.agendasencilla.data.repositorio.ContactoRepositorio
+import com.SamiDev.agendasencilla.data.repository.ContactoRepositorio
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

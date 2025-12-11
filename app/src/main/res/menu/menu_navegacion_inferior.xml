@@ -3,10 +3,14 @@
     <item
         android:id="@+id/contactosFavoritosFragment"
         android:icon="@drawable/ic_favorite"
-        android:title="Favoritos" />
+        android:title="@string/favoritos" />
+    <item
+        android:id="@+id/marcarFragment"
+        android:icon="@drawable/dialpad_24dp"
+        android:title="@string/llamar" />
     <item
         android:id="@+id/listadocontactosFragment"
         android:icon="@drawable/ic_perm_identity"
-        android:title="Listado de Contactos" />
+        android:title="@string/contactos" />
 
 </menu>

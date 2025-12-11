@@ -20,6 +20,7 @@ import androidx.navigation.fragment.findNavController
 import com.SamiDev.agendasencilla.R
 import com.SamiDev.agendasencilla.data.database.Contacto
 import com.SamiDev.agendasencilla.databinding.FragmentGestionContactoBinding
+import com.SamiDev.agendasencilla.util.ContactosImporter
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
@@ -28,6 +29,7 @@ class GestionContactoFragment : Fragment() {
 
     private var _binding: FragmentGestionContactoBinding? = null
     private val binding get() = _binding!!
+    private lateinit var contactosImporter: ContactosImporter
 
     private val viewModel: GestionContactoViewModel by viewModels {
         GestionContactoViewModelFactory(requireActivity().application)
@@ -48,6 +50,16 @@ class GestionContactoFragment : Fragment() {
             contactoId = it.getInt("contactId", -1)
             esModoEdicion = contactoId != -1
         }
+        contactosImporter = ContactosImporter(
+            context = requireContext(),
+            repository = viewModel.repository, // Asegúrate de que tu ViewModel exponga el repository
+            onEstadoChanged = { mensaje ->
+                Snackbar.make(binding.root, mensaje, Snackbar.LENGTH_LONG).show()
+            },
+            onImportacionEnCurso = { enCurso ->
+                binding.btnImportarContactos.isEnabled = !enCurso
+            }
+        )
 
         requestPermisoLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
@@ -77,7 +89,7 @@ class GestionContactoFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         configurarListeners()
-        configurarObservadoresDeImportacion()
+//        configurarObservadoresDeImportacion()
 
         if (esModoEdicion) {
             prepararUIModoEdicion()
@@ -94,7 +106,11 @@ class GestionContactoFragment : Fragment() {
         }
 
         binding.btnImportarContactos.setOnClickListener {
-            solicitarPermisoYImportarContactos()
+            if (contactosImporter.intentarImportar(requestPermisoLauncher)) {
+                viewLifecycleOwner.lifecycleScope.launch {
+                    contactosImporter.importarContactosDelDispositivo()
+                }
+            }
         }
 
         binding.ivFotoContactoDetalle.setOnClickListener {
@@ -135,26 +151,32 @@ class GestionContactoFragment : Fragment() {
         }
     }
 
-    private fun solicitarPermisoYImportarContactos() {
-        when {
-            ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.READ_CONTACTS
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                viewModel.importarContactosDelDispositivo()
-            }
-            shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS) -> {
-                Snackbar.make(binding.root, "Se necesita acceso a tus contactos para importarlos a la agenda.", Snackbar.LENGTH_INDEFINITE)
-                    .setAction("ENTENDIDO") { requestPermisoLauncher.launch(Manifest.permission.READ_CONTACTS) }
-                    .show()
-            }
-            else -> {
-                requestPermisoLauncher.launch(Manifest.permission.READ_CONTACTS)
-            }
-        }
-    }
+//    private fun solicitarPermisoYImportarContactos() {
+//        when {
+//            ContextCompat.checkSelfPermission(
+//                requireContext(),
+//                Manifest.permission.READ_CONTACTS
+//            ) == PackageManager.PERMISSION_GRANTED -> {
+//                viewModel.importarContactosDelDispositivo()
+//            }
+//
+//            shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS) -> {
+//                Snackbar.make(
+//                    binding.root,
+//                    "Se necesita acceso a tus contactos para importarlos a la agenda.",
+//                    Snackbar.LENGTH_INDEFINITE
+//                )
+//                    .setAction("ENTENDIDO") { requestPermisoLauncher.launch(Manifest.permission.READ_CONTACTS) }
+//                    .show()
+//            }
+//
+//            else -> {
+//                requestPermisoLauncher.launch(Manifest.permission.READ_CONTACTS)
+//            }
+//        }
+//    }
 
-    private fun configurarObservadoresDeImportacion() {
+/*    private fun configurarObservadoresDeImportacion() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
@@ -172,7 +194,7 @@ class GestionContactoFragment : Fragment() {
                 }
             }
         }
-    }
+    }*/
 
     private fun guardarContacto() {
         val nombre = binding.etNombreCompleto.text.toString().trim()

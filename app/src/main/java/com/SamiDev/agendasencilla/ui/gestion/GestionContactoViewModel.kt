@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.SamiDev.agendasencilla.data.database.AppDatabase
 import com.SamiDev.agendasencilla.data.database.Contacto
-import com.SamiDev.agendasencilla.data.repositorio.ContactoRepositorio
+import com.SamiDev.agendasencilla.data.repository.ContactoRepositorio
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +20,7 @@ class GestionContactoViewModel(
     private val contactoRepositorio: ContactoRepositorio
 ) : ViewModel() {
 
+    val repository: ContactoRepositorio get() = contactoRepositorio
     private val _estadoImportacion = MutableStateFlow<String?>(null)
     val estadoImportacion: StateFlow<String?> = _estadoImportacion.asStateFlow()
 

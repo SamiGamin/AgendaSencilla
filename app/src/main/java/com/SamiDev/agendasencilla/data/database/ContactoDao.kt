@@ -92,4 +92,7 @@ interface ContactoDao {
      */
     @Query("SELECT * FROM tabla_contactos WHERE numeroTelefono = :numeroTelefono LIMIT 1")
     suspend fun obtenerContactoPorNumero(numeroTelefono: String): Contacto?
+
+    @Query("SELECT COUNT(*) FROM tabla_contactos WHERE numeroTelefono = :numeroTelefono")
+    suspend fun existeContactoPorTelefono(numeroTelefono: String): Int
 }

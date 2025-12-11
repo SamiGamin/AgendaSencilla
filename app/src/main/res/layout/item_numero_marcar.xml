@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/_2sdp"
+    android:gravity="center_vertical"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/iv_foto_contacto"
+        android:layout_width="@dimen/_60sdp"
+        android:layout_height="@dimen/_60sdp"
+        android:scaleType="centerCrop"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+        tools:src="@tools:sample/avatars" />
+
+    <TextView
+        android:id="@+id/tv_nombre"
+        android:layout_width="0sp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_18sdp"
+        android:layout_marginEnd="@dimen/_11sdp"
+        android:textSize="@dimen/_13sdp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/btnLlamar"
+        app:layout_constraintStart_toEndOf="@+id/iv_foto_contacto"
+        app:layout_constraintTop_toTopOf="@+id/btnLlamar"
+        tools:text="Juan Pérez" />
+
+    <TextView
+        android:id="@+id/tv_numero_telefono"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_18sdp"
+        android:layout_marginEnd="@dimen/_11sdp"
+        android:textAppearance="?attr/textAppearanceBodyMedium"
+        android:textSize="@dimen/_13sdp"
+        app:layout_constraintBottom_toBottomOf="@+id/btnLlamar"
+        app:layout_constraintEnd_toStartOf="@+id/btnLlamar"
+        app:layout_constraintStart_toEndOf="@+id/iv_foto_contacto"
+        app:layout_constraintTop_toBottomOf="@+id/tv_nombre"
+        tools:text="310 123 4567" />
+
+    <ImageButton
+        android:id="@+id/btnLlamar"
+        android:layout_width="@dimen/_45sdp"
+        android:layout_height="@dimen/_30sdp"
+        android:contentDescription="Llamar"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_call"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="#FF00A000"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

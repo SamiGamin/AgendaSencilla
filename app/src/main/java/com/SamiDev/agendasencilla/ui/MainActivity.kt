@@ -9,20 +9,28 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import com.SamiDev.agendasencilla.R
-import com.SamiDev.agendasencilla.data.preferencias.OpcionTamanoFuente // Importar enum
+import com.SamiDev.agendasencilla.data.database.AppDatabase
+import com.SamiDev.agendasencilla.data.preferencias.OpcionTamanoFuente
 import com.SamiDev.agendasencilla.data.preferencias.PreferenciasManager
+import com.SamiDev.agendasencilla.data.repository.ContactoRepositorio
 import com.SamiDev.agendasencilla.databinding.ActivityMainBinding
+import com.SamiDev.agendasencilla.util.ContactosImporter
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,6 +39,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var preferenciasManager: PreferenciasManager
 
+    private lateinit var contactosImporter: ContactosImporter
+    private lateinit var permisoLauncher: ActivityResultLauncher<String>
     companion object {
         private const val REQUEST_CODE_CALL_PHONE = 101
     }
@@ -51,9 +61,24 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val database = AppDatabase.obtenerInstancia(application)
+        val repository = ContactoRepositorio(database.contactoDao())
+        contactosImporter = ContactosImporter(
+            context = this,
+            repository = repository,
+            onEstadoChanged = { mensaje ->
+                Snackbar.make(binding.root, mensaje, Snackbar.LENGTH_LONG).show()
+            },
+            onImportacionEnCurso = { /* opcional: mostrar progress global si quieres */ }
+        )
 
-        // Inicializar PreferenciasManager para el resto de la actividad (ej. tema)
-        // Esto ocurre DESPUÉS de attachBaseContext.
+        permisoLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) {
+                lifecycleScope.launch {
+                    contactosImporter.importarContactosDelDispositivo()
+                }
+            }
+        }
         preferenciasManager = PreferenciasManager.getInstance(applicationContext)
 
         // Aplicar el tema antes de inflar la vista y setContentView
@@ -91,15 +116,77 @@ class MainActivity : AppCompatActivity() {
         // Ajustar el padding para el edge-to-edge
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            binding.main.setPadding(0, 0, 0, 0)
+            binding.main.setPadding(
+                systemBars.left,
+                systemBars.top,
+                systemBars.right,
+                0  // Esto empuja el contenido hacia arriba para no tapar con la barra de gestos
+            )
+            binding.navHostFragment.setPadding(
+                systemBars.left,
+                0,  // o systemBars.top si quieres que respete la status bar (raro en bottom nav)
+                systemBars.right,
+                0   // ← Aquí está la clave: padding bottom = 0
+            )
+
             insets
+        }
+        setupFab()
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.contactosFavoritosFragment->{
+                    binding.fabAnadirContacto.setImageResource(R.drawable.upload_24dp)  // o ic_favorite_border
+                    binding.fabAnadirContacto.contentDescription = "Marcar"
+                    binding.fabAnadirContacto.show()
+                }
+                R.id.listadocontactosFragment -> {
+                    binding.fabAnadirContacto.setImageResource(R.drawable.person_add)
+                    binding.fabAnadirContacto.contentDescription = "Añadir nuevo contacto"
+                    binding.fabAnadirContacto.show()
+                }
+                R.id.marcarFragment -> {
+
+                    binding.fabAnadirContacto.hide()
+                }
+                else -> {
+                    binding.fabAnadirContacto.hide()
+                }
+            }
+        }
+    }
+    private fun setupFab() {
+        binding.fabAnadirContacto.setOnClickListener {
+            when (navController.currentDestination?.id) {
+                R.id.listadocontactosFragment -> {
+                    navController.navigate(R.id.action_listadocontactosFragment_to_gestionContactoFragment)
+                }
+                R.id.contactosFavoritosFragment -> {
+                    if (contactosImporter.intentarImportar(permisoLauncher)) {
+                        // Solo si tiene permiso, lanzamos la corrutina
+                        lifecycleScope.launch {
+                            contactosImporter.importarContactosDelDispositivo()
+                        }
+                    }
+                }
+                // Puedes agregar más si es necesario
+            }
         }
     }
 
+
     private fun solicitarPermisoDeLlamada() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CALL_PHONE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             // El permiso no ha sido concedido, así que lo solicitamos.
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CALL_PHONE), REQUEST_CODE_CALL_PHONE)
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.CALL_PHONE),
+                REQUEST_CODE_CALL_PHONE
+            )
         }
         // Si el permiso ya está concedido, no hacemos nada.
     }
@@ -128,11 +215,18 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Acción de búsqueda seleccionada", Toast.LENGTH_SHORT).show()
                 true
             }
-            else -> NavigationUI.onNavDestinationSelected(item, navController) || super.onOptionsItemSelected(item)
+
+            else -> NavigationUI.onNavDestinationSelected(
+                item,
+                navController
+            ) || super.onOptionsItemSelected(item)
         }
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        return NavigationUI.navigateUp(navController, appBarConfiguration) || super.onSupportNavigateUp()
+        return NavigationUI.navigateUp(
+            navController,
+            appBarConfiguration
+        ) || super.onSupportNavigateUp()
     }
 }

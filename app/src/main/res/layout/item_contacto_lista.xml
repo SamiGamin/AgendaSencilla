@@ -4,19 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardElevation="4dp"
-    app:cardCornerRadius="8dp">
+    android:layout_margin="@dimen/_8sdp"
+    app:cardElevation="@dimen/_4sdp"
+    app:cardCornerRadius="@dimen/_8sdp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="@dimen/_8sdp">
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/iv_foto_contacto"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
+            android:layout_width="@dimen/_60sdp"
+            android:layout_height="@dimen/_60sdp"
             android:scaleType="centerCrop"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -27,8 +27,9 @@
             android:id="@+id/tv_nombre_contacto"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginStart="@dimen/_8sdp"
+            android:textSize="@dimen/_12sdp"
+            android:layout_marginEnd="@dimen/_8sdp"
             android:textAppearance="?attr/textAppearanceTitleMedium"
             app:layout_constraintEnd_toStartOf="@+id/btnfavorito"
             app:layout_constraintStart_toEndOf="@+id/iv_foto_contacto"
@@ -39,8 +40,9 @@
             android:id="@+id/tv_numero_telefono"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginStart="@dimen/_8sdp"
+            android:layout_marginEnd="@dimen/_8sdp"
+            android:textSize="@dimen/_11sdp"
             android:textAppearance="?attr/textAppearanceBodyMedium"
             app:layout_constraintBottom_toBottomOf="@+id/iv_foto_contacto"
             app:layout_constraintEnd_toStartOf="@+id/btnfavorito"
@@ -50,8 +52,8 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnfavorito"
             style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="@dimen/_30sdp"
+            android:layout_height="@dimen/_30sdp"
             app:icon="@drawable/ic_favorito_borde"
             app:iconGravity="textStart"
             app:iconPadding="0dp"

@@ -13,6 +13,7 @@ import java.util.UUID
  * Clase Singleton para gestionar la funcionalidad de Text-To-Speech (TTS).
  * Centraliza la inicialización, el uso y la liberación del motor de TTS.
  */
+@Suppress("DEPRECATION")
 class LectorDeVoz private constructor() : TextToSpeech.OnInitListener {
 
     private var textToSpeech: TextToSpeech? = null
@@ -45,7 +46,7 @@ class LectorDeVoz private constructor() : TextToSpeech.OnInitListener {
             textToSpeech = TextToSpeech(context.applicationContext, this)
         }
     }
-
+    @Deprecated("Deprecated in Java")
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             // Configurar el idioma a español
@@ -68,7 +69,8 @@ class LectorDeVoz private constructor() : TextToSpeech.OnInitListener {
                     }
                 }
 
-                @Deprecated("Deprecated in Java")
+
+
                 override fun onError(utteranceId: String?) {
                     utteranceCallbacks.remove(utteranceId)
                 }

@@ -44,4 +44,9 @@
             android:id="@+id/action_listadocontactosFragment_to_configuracionFragment"
             app:destination="@id/configuracionFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/marcarFragment"
+        android:name="com.SamiDev.agendasencilla.ui.gestion.directorio.MarcarFragment"
+        android:label="Llamadas"
+        tools:layout="@layout/fragment_marcar" />
 </navigation>

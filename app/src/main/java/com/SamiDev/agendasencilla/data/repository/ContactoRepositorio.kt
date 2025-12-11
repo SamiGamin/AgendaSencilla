@@ -1,4 +1,4 @@
-package com.SamiDev.agendasencilla.data.repositorio
+package com.SamiDev.agendasencilla.data.repository
 
 import com.SamiDev.agendasencilla.data.database.Contacto
 import com.SamiDev.agendasencilla.data.database.ContactoDao
@@ -89,4 +89,15 @@ class ContactoRepositorio(private val contactoDao: ContactoDao) {
     suspend fun eliminarContacto(contacto: Contacto) {
         contactoDao.eliminarContacto(contacto)
     }
+    /**
+     * Verifica si ya existe un contacto con el número de teléfono proporcionado.
+     * Útil para evitar duplicados al importar contactos del dispositivo.
+     *
+     * @param numeroTelefono El número de teléfono a verificar.
+     * @return true si existe un contacto con ese número, false en caso contrario.
+     */
+    suspend fun existeContactoPorTelefono(numeroTelefono: String): Boolean {
+        return contactoDao.existeContactoPorTelefono(numeroTelefono) > 0
+    }
+
 }

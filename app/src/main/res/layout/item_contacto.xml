@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="2dp"
+    android:layout_margin="@dimen/_2sdp"
+    app:cardCornerRadius="@dimen/_16sdp"
+    app:cardElevation="@dimen/_2sdp"
     android:clickable="true"
     android:focusable="true">
 
@@ -14,12 +14,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
-        android:padding="6dp">
+        android:padding="@dimen/_6sdp">
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/ivFotoContacto"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_width="@dimen/_70sdp"
+            android:layout_height="@dimen/_70sdp"
             android:scaleType="centerCrop"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -29,8 +29,8 @@
         <!-- Botón para Editar Contacto. -->
         <ImageButton
             android:id="@+id/btnEditarContacto"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
+            android:layout_width="@dimen/_38sdp"
+            android:layout_height="@dimen/_38sdp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Editar Contacto"
             android:src="@drawable/ic_edit"
@@ -42,10 +42,10 @@
             android:id="@+id/tvNombreContacto"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginStart="@dimen/_8sdp"
+            android:layout_marginEnd="@dimen/_8sdp"
             android:textAppearance="?attr/textAppearanceTitleMedium"
-            android:textSize="30sp"
+            android:textSize="@dimen/_18sdp"
             android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/btnLlamar"
             app:layout_constraintEnd_toStartOf="@+id/btnEditarContacto"
@@ -57,8 +57,8 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLlamar"
             style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="98dp"
-            android:layout_height="48dp"
+            android:layout_width="@dimen/_75sdp"
+            android:layout_height="@dimen/_30sdp"
             android:layout_marginStart="16dp"
             android:contentDescription="Llamar"
             app:icon="@drawable/ic_call"
