@@ -2,9 +2,11 @@ package com.SamiDev.agendasencilla.ui
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -51,8 +53,8 @@ class MainActivity : AppCompatActivity() {
 
         nuevaConfiguracion.fontScale = when (opcionTamanoFuente) {
             OpcionTamanoFuente.NORMAL -> 1.0f
-            OpcionTamanoFuente.GRANDE -> 1.7f // Valor de ejemplo, ajustar si es necesario
-            OpcionTamanoFuente.MAS_GRANDE -> 2.2f // Valor de ejemplo, ajustar si es necesario
+            OpcionTamanoFuente.GRANDE -> 1.15f // Valor de ejemplo, ajustar si es necesario
+            OpcionTamanoFuente.MAS_GRANDE -> 1.30f // Valor de ejemplo, ajustar si es necesario
         }
         // Aplicar la configuración al contexto base con el que la actividad será creada.
         super.attachBaseContext(newBase.createConfigurationContext(nuevaConfiguracion))
@@ -143,9 +145,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.configuracionFragment -> {
                     binding.fabAnadirContacto.hide()
                 }
-                R.id.gestionContactoFragment -> {
-                    binding.fabAnadirContacto.hide()
-                }
                 else -> {
                     binding.fabAnadirContacto.hide()
                 }
@@ -156,10 +155,26 @@ class MainActivity : AppCompatActivity() {
         binding.fabAnadirContacto.setOnClickListener {
             when (navController.currentDestination?.id) {
                 R.id.listadocontactosFragment -> {
-                    navController.navigate(R.id.action_listadocontactosFragment_to_gestionContactoFragment)
+                    try {
+                        val intent = Intent(Intent.ACTION_INSERT).apply {
+                            // Indicamos que queremos insertar un Contacto
+                            type = ContactsContract.Contacts.CONTENT_TYPE
+                        }
+                        startActivity(intent)
+                    } catch (e: Exception) {
+                        Toast.makeText(this, "No se encontró app de contactos", Toast.LENGTH_SHORT).show()
+                    }
                 }
                 R.id.contactosFavoritosFragment -> {
-                    navController.navigate(R.id.action_contactosFavoritosFragment_to_gestionContactoFragment)
+                    try {
+                        val intent = Intent(Intent.ACTION_INSERT).apply {
+                            // Indicamos que queremos insertar un Contacto
+                            type = ContactsContract.Contacts.CONTENT_TYPE
+                        }
+                        startActivity(intent)
+                    } catch (e: Exception) {
+                        Toast.makeText(this, "No se encontró app de contactos", Toast.LENGTH_SHORT).show()
+                    }
                 }
                 // Puedes agregar más si es necesario
             }
@@ -194,6 +209,7 @@ class MainActivity : AppCompatActivity() {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         }
     }
+
 
 
     override fun onSupportNavigateUp(): Boolean {

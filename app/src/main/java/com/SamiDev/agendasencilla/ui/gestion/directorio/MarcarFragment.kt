@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.CallLog
+import android.provider.ContactsContract
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
@@ -13,6 +14,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -27,6 +29,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.SamiDev.agendasencilla.R
 import com.SamiDev.agendasencilla.data.database.AppDatabase
 import com.SamiDev.agendasencilla.data.repository.ContactoTelefonoRepositorio
@@ -36,6 +39,7 @@ import com.SamiDev.agendasencilla.util.PhoneNumberFormatter
 import com.SamiDev.agendasencilla.util.adapter.ContactoSugerenciaAdapter
 import com.SamiDev.agendasencilla.util.adapter.HistorialAdapter
 
+@Suppress("DEPRECATION")
 class MarcarFragment : Fragment() {
 
     private var _binding: FragmentMarcarBinding? = null
@@ -80,7 +84,7 @@ class MarcarFragment : Fragment() {
         observarViewModel()
         configurarTeclas()
         configurarBotonBorrar()
-        configurarBotonLlamar()
+        setupBtnAgregar()
         setupManejadorAtras()
         setupFab()
     }
@@ -174,6 +178,16 @@ class MarcarFragment : Fragment() {
             // ¡ESTA LÍNEA ES OBLIGATORIA! Sin ella, la lista es invisible
             layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
             binding.rvSugerencias.adapter = adapterHistorial
+            addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    if (dy > 10) {
+                        if (viewModel.modoTeclado.value == true) {
+                            viewModel.activarModoHistorial()
+                        }
+                    }
+                }
+            })
         }
         Log.d("MARCADOR_DEBUG", "RecyclerView configurado correctamente")
     }
@@ -181,42 +195,39 @@ class MarcarFragment : Fragment() {
     private fun observarViewModel() {
         // NUEVO: Observar si mostramos teclado o historial
         viewModel.modoTeclado.observe(viewLifecycleOwner) { mostrarTeclado ->
-            val layoutParams = binding.rvSugerencias.layoutParams
-            if (mostrarTeclado) {
-                // MODO MARCADOR
-                binding.gridTeclas.visibility = View.VISIBLE
-                binding.linearLayout.visibility = View.VISIBLE // El campo donde sale el número
-                binding.fabAbrirTeclado.hide()
-                // Ajustar altura del Recycler para compartir pantalla (usando pesos)
-                if (layoutParams is android.widget.LinearLayout.LayoutParams) {
-                    layoutParams.height = 0
-                    layoutParams.weight = 0.8f // Usamos 'weight' normal, no 'verticalWeight'
-                    binding.rvSugerencias.layoutParams = layoutParams
+            binding.gridTeclas.visibility = if (mostrarTeclado) View.VISIBLE else View.GONE
+            binding.linearLayout.visibility = if (mostrarTeclado) View.VISIBLE else View.GONE
+            if (mostrarTeclado) binding.fabAbrirTeclado.hide() else binding.fabAbrirTeclado.show()
+            val params = binding.rvSugerencias.layoutParams
+            if (params is ConstraintLayout.LayoutParams) {
+                if (mostrarTeclado) {
+                    params.height = 0
+                    params.bottomToTop = binding.linearLayout.id
+                    params.bottomToBottom = ConstraintLayout.LayoutParams.UNSET
+                    params.verticalWeight = 0f
                 }
-                // CÓDIGO PARA CONSTRAINT LAYOUT (Por si acaso cambias el XML luego)
-                else if (layoutParams is androidx.constraintlayout.widget.ConstraintLayout.LayoutParams) {
-                    layoutParams.height = 0
-                    layoutParams.verticalWeight = 0.8f
-                    binding.rvSugerencias.layoutParams = layoutParams
-                }
+                else{
 
-            } else {
-                // MODO HISTORIAL (Pantalla Completa)
-                binding.gridTeclas.visibility = View.GONE
-                binding.linearLayout.visibility = View.GONE
-                binding.fabAbrirTeclado.show()
+                    params.height = 0
+                    params.bottomToTop = ConstraintLayout.LayoutParams.UNSET
+                    params.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+                    params.verticalWeight = 0f
+                }
+                binding.rvSugerencias.layoutParams = params
+                binding.rvSugerencias.requestLayout()
 
-                if (layoutParams is android.widget.LinearLayout.LayoutParams) {
-                    layoutParams.height = 0
-                    layoutParams.weight = 1f // Peso 1 para llenar todo
-                    binding.rvSugerencias.layoutParams = layoutParams
+            }
+            else if (params is android.widget.LinearLayout.LayoutParams) {
+                // FALLBACK: Por si cambiaras el XML a LinearLayout en el futuro
+                if (mostrarTeclado) {
+                    params.height = 0
+                    params.weight = 1f
+                } else {
+                    params.height = ViewGroup.LayoutParams.MATCH_PARENT
+                    params.weight = 0f
                 }
-                else if (layoutParams is androidx.constraintlayout.widget.ConstraintLayout.LayoutParams) {
-                    layoutParams.height = 0
-                    layoutParams.verticalWeight = 0f
-                    layoutParams.bottomToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                    binding.rvSugerencias.layoutParams = layoutParams
-                }
+                binding.rvSugerencias.layoutParams = params
+                binding.rvSugerencias.requestLayout()
             }
         }
 
@@ -225,6 +236,13 @@ class MarcarFragment : Fragment() {
             binding.etNumero.setText(numero)
             binding.etNumero.setSelection(numero.length)
 
+            val longitudReal = numero.replace(" ", "").length
+
+            if (longitudReal > 3) {
+                binding.btnAgregar.visibility = View.VISIBLE
+            } else {
+                binding.btnAgregar.visibility = View.GONE
+            }
             if (numero.isEmpty()) {
                 // Si borra el número -> Mostrar Historial
                 binding.rvSugerencias.adapter = adapterHistorial
@@ -307,9 +325,27 @@ class MarcarFragment : Fragment() {
         }
     }
 
-    private fun configurarBotonLlamar() {
+    private fun setupBtnAgregar() {
         binding.btnAgregar.setOnClickListener {
-            viewModel.solicitarLlamada()
+            // 1. Obtenemos el número escrito
+            val numeroAguardar = viewModel.numeroActual.value.orEmpty()
+
+            if (numeroAguardar.isNotEmpty()) {
+                try {
+                    // 2. Creamos el Intent nativo de Insertar
+                    val intent = Intent(Intent.ACTION_INSERT).apply {
+                        type = ContactsContract.Contacts.CONTENT_TYPE
+
+                        // 3. ¡MAGIA! Le pasamos el número a la app de contactos
+                        putExtra(ContactsContract.Intents.Insert.PHONE, numeroAguardar)
+                    }
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(requireContext(), "Error al abrir contactos", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+             Toast.makeText(requireContext(), "Escribe un número primero", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

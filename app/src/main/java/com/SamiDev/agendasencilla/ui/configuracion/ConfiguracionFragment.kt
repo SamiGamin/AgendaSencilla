@@ -73,11 +73,49 @@ class ConfiguracionFragment : Fragment() {
     private fun observarOpcionTemaSeleccionada() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.opcionTemaSeleccionada.collect { opcion ->
-                    when (opcion) {
-                        OpcionTema.CLARO -> binding.toggleGroupTema.check(R.id.btn_tema_claro)
-                        OpcionTema.OSCURO -> binding.toggleGroupTema.check(R.id.btn_tema_oscuro)
-                        OpcionTema.SISTEMA -> binding.toggleGroupTema.check(R.id.btn_tema_sistema)
+
+                // Observar Tema
+                launch {
+                    viewModel.opcionTemaSeleccionada.collect { opcion ->
+                        val idSeleccionado = when (opcion) {
+                            OpcionTema.CLARO -> R.id.btn_tema_claro
+                            OpcionTema.OSCURO -> R.id.btn_tema_oscuro
+                            OpcionTema.SISTEMA -> R.id.btn_tema_sistema
+                        }
+                        if (binding.toggleGroupTema.checkedButtonId != idSeleccionado) {
+                            binding.toggleGroupTema.check(idSeleccionado)
+                        }
+                    }
+                }
+
+                // Observar Tamaño Fuente
+                launch {
+                    viewModel.opcionTamanoFuenteSeleccionada.collect { opcion ->
+                        val idSeleccionado = when (opcion) {
+                            OpcionTamanoFuente.NORMAL -> R.id.btn_tamano_normal
+                            OpcionTamanoFuente.GRANDE -> R.id.btn_tamano_grande
+                            OpcionTamanoFuente.MAS_GRANDE -> R.id.btn_tamano_mas_grande
+                        }
+                        // Evita re-checkear si ya está marcado visualmente
+                        if (binding.toggleGroupTamanoFuente.checkedButtonId != idSeleccionado) {
+                            binding.toggleGroupTamanoFuente.check(idSeleccionado)
+                        }
+                    }
+                }
+
+                // Observar Lectura Voz
+                launch {
+                    viewModel.preferenciaLecturaVozActiva.collect { activada ->
+                        if (binding.switchLecturaEnVoz.isChecked != activada) {
+                            binding.switchLecturaEnVoz.isChecked = activada
+                        }
+                    }
+                }
+
+                // Observar Recreación
+                launch {
+                    viewModel.eventoRecrearActividad.collect {
+                        activity?.recreate()
                     }
                 }
             }
@@ -168,6 +206,9 @@ class ConfiguracionFragment : Fragment() {
                     if (viewModel.opcionTamanoFuenteSeleccionada.value != it) {
                         viewModel.actualizarOpcionTamanoFuente(it)
                     }
+                }
+                binding.switchLecturaEnVoz.setOnCheckedChangeListener { _, isChecked ->
+                    viewModel.actualizarPreferenciaLecturaEnVoz(isChecked)
                 }
             }
         }

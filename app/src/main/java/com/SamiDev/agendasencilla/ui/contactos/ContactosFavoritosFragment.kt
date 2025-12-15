@@ -19,6 +19,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.SamiDev.agendasencilla.R
 import com.SamiDev.agendasencilla.data.ContactoTelefono
@@ -123,24 +124,45 @@ class ContactosFavoritosFragment : Fragment() {
 
     private fun configurarMenu() {
         val menuHost: MenuHost = requireActivity()
+
+        // Añadimos el MenuProvider asociado al ciclo de vida de la vista (viewLifecycleOwner)
         menuHost.addMenuProvider(object : MenuProvider {
+
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                // Asegúrate que este recurso R.menu.menu_contactos existe o usa uno genérico
+                // 1. Inflar el menú
                 menuInflater.inflate(R.menu.menu_contactos, menu)
 
+                // 2. Configurar el SearchView
                 val searchItem = menu.findItem(R.id.action_search)
                 val searchView = searchItem?.actionView as? SearchView
 
                 searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                    override fun onQueryTextSubmit(query: String?): Boolean = true
+                    override fun onQueryTextSubmit(query: String?): Boolean {
+                        return true
+                    }
+
                     override fun onQueryTextChange(newText: String?): Boolean {
                         viewModel.actualizarTerminoBusqueda(newText.orEmpty())
                         return true
                     }
                 })
             }
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean = false
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                // 3. Manejar clics en opciones del menú
+                return when (menuItem.itemId) {
+                    R.id.action_search -> {
+                        // El SearchView ya se maneja solo, pero retornamos true para indicar consumo
+                        true
+                    }
+                    else -> {
+                       NavigationUI.onNavDestinationSelected(menuItem, findNavController())
+                        false
+                    }
+                }
+            }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+
     }
 
     override fun onDestroyView() {

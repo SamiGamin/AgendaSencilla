@@ -71,6 +71,7 @@ class LectorDeVoz private constructor() : TextToSpeech.OnInitListener {
 
 
 
+
                 override fun onError(utteranceId: String?) {
                     utteranceCallbacks.remove(utteranceId)
                 }
