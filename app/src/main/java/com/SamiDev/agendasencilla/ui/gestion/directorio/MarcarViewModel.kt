@@ -5,10 +5,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.SamiDev.agendasencilla.data.database.Contacto
+import com.SamiDev.agendasencilla.data.ContactoTelefono
 import com.SamiDev.agendasencilla.data.database.LlamadaLog
-import com.SamiDev.agendasencilla.data.repository.ContactoRepositorio
+import com.SamiDev.agendasencilla.data.repository.ContactoTelefonoRepositorio
 import com.SamiDev.agendasencilla.data.repository.LlamadasRepositorio
+import com.SamiDev.agendasencilla.util.Resultado
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -16,62 +17,84 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+class MarcarViewModel(
+    private val repoContactos: ContactoTelefonoRepositorio,
+    private val repoLlamadas: LlamadasRepositorio
+) : ViewModel() {
 
-@OptIn(FlowPreview::class)
-class MarcarViewModel (
-    private val repositorio: ContactoRepositorio,
-    private val repositorioLog: LlamadasRepositorio
-): ViewModel() {
+    // Entrada del usuario (teclado numérico)
     private val _numeroActual = MutableLiveData("")
     val numeroActual: LiveData<String> = _numeroActual
 
-    private val _sugerencias = MutableLiveData<List<Contacto>>(emptyList())
+    // Sugerencias de contactos (mientras escribe)
+    private val _sugerencias = MutableLiveData<List<ContactoTelefono>>(emptyList())
+    val sugerencias: LiveData<List<ContactoTelefono>> = _sugerencias
 
-    private val _historial = MutableLiveData<List<LlamadaLog>>()
-    val historial: LiveData<List<LlamadaLog>> get() = _historial
-    val sugerencias: LiveData<List<Contacto>> = _sugerencias
+    // Historial de llamadas (cuando no escribe)
+    private val _historial = MutableLiveData<List<LlamadaLog>>(emptyList())
+    val historial: LiveData<List<LlamadaLog>> = _historial
 
-    // Evento para llamar
+    // Control de UI
+    private val _modoTeclado = MutableLiveData(true)
+    val modoTeclado: LiveData<Boolean> = _modoTeclado
+
+    // Eventos (Llamar)
     private val _eventoLlamar = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val eventoLlamar: SharedFlow<String> = _eventoLlamar.asSharedFlow()
 
-    private val _modoTeclado = MutableLiveData<Boolean>(true)
-    val modoTeclado: LiveData<Boolean> get() = _modoTeclado
+    // Caché local de contactos para búsqueda rápida sin consultar CP cada vez
+    private var listaCompletaContactos: List<ContactoTelefono> = emptyList()
 
     init {
-        // Esta es la clave: cada vez que cambia el número → buscamos
+        // Cargar contactos en memoria al iniciar para búsqueda rápida
+        cargarContactosEnMemoria()
+
+        // Cargar historial inicial
+        cargarHistorial()
+
+        // Observar cambios en el número para filtrar
         _numeroActual.observeForever { query ->
-            buscarSugerencias(query)
+            filtrarSugerencias(query)
         }
     }
-    fun activarModoHistorial() {
-        _modoTeclado.value = false
-    }
-    fun activarModoMarcador() {
-        _modoTeclado.value = true
-        cargarHistorial(null)
-    }
-    private fun buscarSugerencias(query: String) {
-        Log.d("MARCADOR_DEBUG", "Buscando sugerencias para: '$query'")
+
+    private fun cargarContactosEnMemoria() {
         viewModelScope.launch {
-            if (query.isEmpty()) {
-                _sugerencias.postValue(emptyList())
-                Log.d("MARCADOR_DEBUG", "Total de contactos en BD: ${_sugerencias.value}")
-                return@launch
+            val resultado = repoContactos.obtenerContactosDelTelefono()
+            if (resultado is Resultado.Exito) {
+                listaCompletaContactos = resultado.datos
             }
-
-            // Busca por nombre O por número
-            val todos = repositorio.obtenerTodosLosContactos().first()
-
-            val filtrados = todos.filter { contacto ->
-                contacto.nombreCompleto.contains(query, ignoreCase = true) ||
-                        contacto.numeroTelefono.replace(" ", "").contains(query.replace(" ", ""))
-            }
-
-            _sugerencias.postValue(filtrados.take(6)) // máximo 6 sugerencias
         }
-        Log.d("MARCADOR_DEBUG", "Total de contactos en BD: ${_sugerencias.value}")
     }
+
+    fun cargarHistorial(filtroTipo: Int? = null) {
+        viewModelScope.launch {
+            val logs = repoLlamadas.obtenerHistorialLlamadas(filtroTipo)
+            _historial.postValue(logs)
+        }
+    }
+
+    private fun filtrarSugerencias(query: String) {
+        if (query.isEmpty()) {
+            _sugerencias.value = emptyList()
+            return
+        }
+
+        viewModelScope.launch(Dispatchers.Default) {
+            val queryLimpia = query.replace(" ", "")
+
+            // Filtramos la lista en memoria
+            val filtrados = listaCompletaContactos.filter { contacto ->
+                // Coincidencia por nombre O por número
+                contacto.nombreCompleto.contains(query, ignoreCase = true) ||
+                        contacto.numeroTelefono.replace(" ", "").contains(queryLimpia)
+            }
+
+            _sugerencias.postValue(filtrados.take(5)) // Top 5 resultados
+        }
+    }
+
+    // --- LÓGICA DEL TECLADO ---
 
     fun agregarDigito(digito: String) {
         val actual = _numeroActual.value.orEmpty()
@@ -91,16 +114,23 @@ class MarcarViewModel (
         _numeroActual.value = ""
     }
 
-    fun solicitarLlamada(numero: String) {
-        _eventoLlamar.tryEmit(numero.replace(" ", ""))
+    // --- MODOS DE VISTA ---
+
+    fun activarModoHistorial() {
+        _modoTeclado.value = false
     }
 
-    fun obtenerNumeroParaLlamar() = _numeroActual.value.orEmpty().replace(" ", "")
-    fun cargarHistorial(filtro: Int? = null) {
-        viewModelScope.launch(Dispatchers.IO) {
-            // Asumiendo que inyectaste el repo o tienes acceso al context
-            val logs = repositorioLog.obtenerHistorialLlamadas(filtro)
-            _historial.postValue(logs)
+    fun activarModoMarcador() {
+        _modoTeclado.value = true
+        cargarHistorial(null) // Restaurar historial completo
+    }
+
+    // --- ACCIONES ---
+
+    fun solicitarLlamada(numeroOpcional: String? = null) {
+        val numeroALlamar = numeroOpcional ?: _numeroActual.value.orEmpty()
+        if (numeroALlamar.isNotBlank()) {
+            _eventoLlamar.tryEmit(numeroALlamar.replace(" ", ""))
         }
     }
 }

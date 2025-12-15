@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
-        android:padding="@dimen/_6sdp">
+        android:padding="@dimen/_3sdp">
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/ivFotoContacto"
@@ -42,30 +42,42 @@
             android:id="@+id/tvNombreContacto"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_8sdp"
-            android:layout_marginEnd="@dimen/_8sdp"
             android:textAppearance="?attr/textAppearanceTitleMedium"
             android:textSize="@dimen/_18sdp"
+            android:paddingStart="@dimen/_10sdp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@+id/btnLlamar"
             app:layout_constraintEnd_toStartOf="@+id/btnEditarContacto"
             app:layout_constraintStart_toEndOf="@+id/ivFotoContacto"
             app:layout_constraintTop_toTopOf="@+id/ivFotoContacto"
-            tools:text="Abuela Elena"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription"
+            tools:text="Abuela Elena" />
+
+        <TextView
+            android:id="@+id/tvTelefonoContacto"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textSize="@dimen/_13sdp"
+            android:textStyle="bold"
+            android:paddingStart="@dimen/_10sdp"
+            app:layout_constraintBottom_toTopOf="@+id/btnLlamar"
+            app:layout_constraintEnd_toEndOf="@+id/tvNombreContacto"
+            app:layout_constraintStart_toStartOf="@+id/tvNombreContacto"
+            app:layout_constraintTop_toBottomOf="@+id/tvNombreContacto"
+            tools:ignore="ContentDescription"
+            tools:text="3504897017" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLlamar"
             style="?attr/materialButtonOutlinedStyle"
             android:layout_width="@dimen/_75sdp"
             android:layout_height="@dimen/_30sdp"
-            android:layout_marginStart="16dp"
             android:contentDescription="Llamar"
             app:icon="@drawable/ic_call"
             app:iconGravity="textStart"
             app:iconPadding="0dp"
             app:layout_constraintBottom_toBottomOf="@+id/ivFotoContacto"
-            app:layout_constraintEnd_toEndOf="@+id/tvNombreContacto"
+            app:layout_constraintEnd_toEndOf="@+id/tvTelefonoContacto"
             app:layout_constraintStart_toEndOf="@+id/ivFotoContacto" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

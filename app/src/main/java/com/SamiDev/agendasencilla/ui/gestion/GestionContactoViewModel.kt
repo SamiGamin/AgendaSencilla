@@ -1,192 +1,94 @@
 package com.SamiDev.agendasencilla.ui.gestion
 
 import android.app.Application
+import android.content.ContentProviderOperation
 import android.provider.ContactsContract
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.SamiDev.agendasencilla.data.ContactoTelefono
 import com.SamiDev.agendasencilla.data.database.AppDatabase
-import com.SamiDev.agendasencilla.data.database.Contacto
-import com.SamiDev.agendasencilla.data.repository.ContactoRepositorio
+import com.SamiDev.agendasencilla.data.repository.ContactoTelefonoRepositorio
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-
 class GestionContactoViewModel(
     private val application: Application,
-    private val contactoRepositorio: ContactoRepositorio
+    private val repositorio: ContactoTelefonoRepositorio
 ) : ViewModel() {
 
-    val repository: ContactoRepositorio get() = contactoRepositorio
-    private val _estadoImportacion = MutableStateFlow<String?>(null)
-    val estadoImportacion: StateFlow<String?> = _estadoImportacion.asStateFlow()
+    private val TAG = GestionContactoViewModel::class.java.simpleName
 
-    private val _importacionEnCurso = MutableStateFlow(false)
-    val importacionEnCurso: StateFlow<Boolean> = _importacionEnCurso.asStateFlow()
+    private val _contactoCargado = MutableStateFlow<ContactoTelefono?>(null)
+    val contactoCargado: StateFlow<ContactoTelefono?> = _contactoCargado.asStateFlow()
 
-    private val _contactoCargado = MutableStateFlow<Contacto?>(null)
-    val contactoCargado: StateFlow<Contacto?> = _contactoCargado.asStateFlow()
+    private val _estadoGuardado = MutableStateFlow<Boolean?>(null)
+    val estadoGuardado: StateFlow<Boolean?> = _estadoGuardado.asStateFlow()
 
-    fun cargarContacto(id: Int) {
+    fun cargarContacto(id: String) {
         viewModelScope.launch {
-            contactoRepositorio.obtenerContactoPorId(id).collect { contacto ->
-                _contactoCargado.value = contacto
-            }
-        }
-    }
-
-    fun guardarContacto(contacto: Contacto) {
-        viewModelScope.launch {
-            if (contacto.id == 0) {
-                contactoRepositorio.insertarContacto(contacto)
-            } else {
-                contactoRepositorio.actualizarContacto(contacto)
-            }
+            val contacto = repositorio.obtenerContactoPorId(id)
+            _contactoCargado.value = contacto
         }
     }
 
     /**
-     * Importa y actualiza contactos del dispositivo de forma inteligente, aplicando reglas de negocio
-     * para agrupar por nombre y validar/normalizar cada número de teléfono.
+     * Guarda cambios en el Sistema (Nombre/Teléfono) y en Local (Favorito)
      */
-    fun importarContactosDelDispositivo() {
-        viewModelScope.launch {
-            _importacionEnCurso.value = true
-            _estadoImportacion.value = "Analizando y agrupando contactos..."
-
+    fun guardarCambios(contacto: ContactoTelefono, nuevoNombre: String, nuevoTelefono: String, esFavorito: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                // 1. Obtiene los contactos actuales de la BD y los prepara para consulta rápida.
-                val contactosActuales = contactoRepositorio.obtenerTodosLosContactos().first()
-                val mapaContactosActualesPorNombre = contactosActuales.associateBy { it.nombreCompleto }.toMutableMap()
+                // 1. Actualizar Favorito Localmente
+                if (esFavorito) {
+                    repositorio.marcarComoFavorito(contacto.id)
+                } else {
+                    repositorio.desmarcarFavorito(contacto.id)
+                }
 
-                // 2. Agrupa todos los números y fotos del dispositivo por nombre de contacto.
-                val mapaContactosDispositivo = mutableMapOf<String, MutableSet<String>>()
-                val mapaFotosDispositivo = mutableMapOf<String, String>()
+                // 2. Actualizar Nombre y Teléfono en el Sistema Android
+                // Esto requiere permiso WRITE_CONTACTS
+                val operations = ArrayList<ContentProviderOperation>()
 
-                val contentResolver = application.contentResolver
-                val projection = arrayOf(
-                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                    ContactsContract.CommonDataKinds.Phone.NUMBER,
-                    ContactsContract.CommonDataKinds.Phone.PHOTO_URI
+                // Actualizar Nombre
+                val whereNombre = "${ContactsContract.Data.CONTACT_ID}=? AND ${ContactsContract.Data.MIMETYPE}=?"
+                val argsNombre = arrayOf(contacto.id, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
+
+                operations.add(
+                    ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                        .withSelection(whereNombre, argsNombre)
+                        .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, nuevoNombre)
+                        .build()
                 )
 
-                contentResolver.query(
-                    ContactsContract.CommonDataKinds.Phone.CONTENT_URI, projection, null, null,
-                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC"
-                )?.use { cursor ->
-                    val nombreIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
-                    val numeroIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
-                    val fotoIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_URI)
+                // Actualizar Teléfono
+                val wherePhone = "${ContactsContract.Data.CONTACT_ID}=? AND ${ContactsContract.Data.MIMETYPE}=?"
+                val argsPhone = arrayOf(contacto.id, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
 
-                    while (cursor.moveToNext()) {
-                        val nombre = cursor.getString(nombreIndex)
-                        val numero = cursor.getString(numeroIndex)
-                        val foto = if (fotoIndex != -1) cursor.getString(fotoIndex) else null
+                operations.add(
+                    ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
+                        .withSelection(wherePhone, argsPhone)
+                        .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, nuevoTelefono)
+                        .build()
+                )
 
-                        if (nombre != null && numero != null && numero.isNotBlank()) {
-                            Log.d(TAG, "Dispositivo -> Leyendo: '$nombre', Número crudo: '$numero'")
-                            mapaContactosDispositivo.getOrPut(nombre) { mutableSetOf() }.add(numero)
-                            if (foto != null && !mapaFotosDispositivo.containsKey(nombre)) {
-                                mapaFotosDispositivo[nombre] = foto
-                            }
-                        }
-                    }
-                }
+                // Ejecutar lote
+                application.contentResolver.applyBatch(ContactsContract.AUTHORITY, operations)
 
-                // 3. Procesa cada contacto agrupado, valida sus números y decide si insertar o actualizar.
-                var contadorNuevos = 0
-                var contadorActualizados = 0
-
-                for ((nombre, numerosDispositivo) in mapaContactosDispositivo) {
-                    Log.d(TAG, "Procesando: '$nombre', Números originales: $numerosDispositivo")
-                    // Normaliza y valida todos los números para esta persona según las reglas de negocio.
-                    val numerosValidosYUnicos = numerosDispositivo
-                        .map(::normalizarNumeroTelefono)
-                        .filter { it.length == 10 && it.startsWith("3") }
-                        .toSet()
-
-                    Log.d(TAG, " -> Números válidos y únicos para '$nombre': $numerosValidosYUnicos")
-
-                    if (numerosValidosYUnicos.isEmpty()) {
-                        Log.d(TAG, " -> Ignorando a '$nombre', no tiene números válidos.")
-                        continue // Omite si no hay números válidos.
-                    }
-
-                    val contactoExistente = mapaContactosActualesPorNombre[nombre]
-
-                    if (contactoExistente == null) {
-                        // El contacto es nuevo. Se crea e inserta.
-                        val numerosAGuardar = numerosValidosYUnicos.joinToString(",")
-                        Log.d(TAG, "   -> ¡NUEVO! Guardando a '$nombre' con números: '$numerosAGuardar'")
-                        val nuevoContacto = Contacto(
-                            nombreCompleto = nombre,
-                            numeroTelefono = numerosAGuardar,
-                            fotoUri = mapaFotosDispositivo[nombre],
-                            esFavorito = false,
-                            notas = null
-                        )
-                        contactoRepositorio.insertarContacto(nuevoContacto)
-                        contadorNuevos++
-                    } else {
-                        // El contacto ya existe. Comprueba si hay números nuevos para añadir.
-                        val numerosActuales = contactoExistente.numeroTelefono?.split(",")?.toSet() ?: emptySet()
-                        val numerosNuevosParaAnadir = numerosValidosYUnicos - numerosActuales
-
-                        if (numerosNuevosParaAnadir.isNotEmpty()) {
-                            val todosLosNumeros = (numerosActuales + numerosNuevosParaAnadir).distinct()
-                            val numerosAGuardar = todosLosNumeros.joinToString(",")
-                            Log.d(TAG, "   -> ¡ACTUALIZANDO! Añadiendo a '$nombre' los números: $numerosNuevosParaAnadir. Resultado final: '$numerosAGuardar'")
-                            val contactoActualizado = contactoExistente.copy(
-                                numeroTelefono = numerosAGuardar
-                            )
-                            contactoRepositorio.actualizarContacto(contactoActualizado)
-                            contadorActualizados++
-                        } else {
-                            Log.d(TAG, "   -> Sin cambios para '$nombre', los números válidos ya existen.")
-                        }
-                    }
-                }
-
-                // 4. Informa el resultado de la operación.
-                val mensajeFinal = when {
-                    contadorNuevos > 0 && contadorActualizados > 0 -> "$contadorNuevos contactos importados y $contadorActualizados actualizados."
-                    contadorNuevos > 0 -> "$contadorNuevos contactos nuevos importados."
-                    contadorActualizados > 0 -> "$contadorActualizados contactos fueron actualizados con nuevos números."
-                    else -> "No se encontraron nuevos contactos o números para importar."
-                }
-                _estadoImportacion.value = mensajeFinal
+                _estadoGuardado.value = true
 
             } catch (e: Exception) {
-                _estadoImportacion.value = "Error durante la importación: ${e.message}"
-                Log.e(TAG, "Error fatal durante la importación", e)
-            } finally {
-                _importacionEnCurso.value = false
+                Log.e(TAG, "Error guardando contacto", e)
+                _estadoGuardado.value = false
             }
         }
     }
 
-    /**
-     * Normaliza un número de teléfono para el formato estándar de 10 dígitos de Colombia.
-     * Ej: "+57 (310) 123-4567" -> "3101234567"
-     */
-    private fun normalizarNumeroTelefono(numero: String): String {
-        val digitos = numero.filter { it.isDigit() }
-        return if (digitos.length == 12 && digitos.startsWith("57")) {
-            digitos.substring(2)
-        } else {
-            digitos
-        }
-    }
-
-    fun limpiarEstadoImportacion() {
-        _estadoImportacion.value = null
-    }
-
-    companion object {
-        private const val TAG = "GestionContactoViewModel"
+    fun reiniciarEstadoGuardado() {
+        _estadoGuardado.value = null
     }
 }
 
@@ -194,10 +96,10 @@ class GestionContactoViewModel(
 class GestionContactoViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(GestionContactoViewModel::class.java)) {
-            val contactoDao = AppDatabase.obtenerInstancia(application).contactoDao()
-            val repositorio = ContactoRepositorio(contactoDao)
+            val database = AppDatabase.obtenerInstancia(application)
+            val repositorio = ContactoTelefonoRepositorio(application.applicationContext, database.favoritoDao())
             return GestionContactoViewModel(application, repositorio) as T
         }
-        throw IllegalArgumentException("Clase ViewModel desconocida: " + modelClass.name)
+        throw IllegalArgumentException("Clase ViewModel desconocida")
     }
 }

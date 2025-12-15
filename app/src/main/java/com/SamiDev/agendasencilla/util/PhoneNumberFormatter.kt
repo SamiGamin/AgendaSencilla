@@ -62,4 +62,23 @@ object PhoneNumberFormatter {
             }
         })
     }
+    /**
+
+     * Recibe "3504897017" y retorna "350 489 7017"
+     */
+    fun formatearParaLectura(numero: String): String {
+        // 1. Nos aseguramos que solo haya números (por seguridad)
+        val soloNumeros = numero.filter { it.isDigit() }
+
+        // 2. Construimos el String con espacios
+        val sb = StringBuilder()
+        soloNumeros.forEachIndexed { index, char ->
+            // Agregamos espacio en la posición 3 y 6 (después del 3er y 6to número)
+            if (index == 3 || index == 6) {
+                sb.append(" ")
+            }
+            sb.append(char)
+        }
+        return sb.toString()
+    }
 }

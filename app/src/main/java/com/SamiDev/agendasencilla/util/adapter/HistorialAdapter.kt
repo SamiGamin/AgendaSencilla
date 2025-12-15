@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.SamiDev.agendasencilla.R
 import com.SamiDev.agendasencilla.data.database.LlamadaLog
 import com.SamiDev.agendasencilla.databinding.ItemHistorialBinding
+import com.SamiDev.agendasencilla.util.PhoneNumberFormatter
 
 class HistorialAdapter (private val onClick: (String) -> Unit
 ) : ListAdapter<LlamadaLog, HistorialAdapter.ViewHolder>(DiffCallback) {
@@ -20,7 +21,9 @@ class HistorialAdapter (private val onClick: (String) -> Unit
 
         fun bind(item: LlamadaLog) {
             // Mostrar nombre si existe, sino el número
-            binding.txtNumeroONombre.text = if (!item.nombre.isNullOrEmpty()) item.nombre else item.numero
+            binding.txtNombre.text = item.nombre
+            binding.txtTelefono.text = PhoneNumberFormatter.formatearParaLectura(item.numero)
+
 
             // Formatear fecha (puedes usar SimpleDateFormat aquí o en el repo)
             binding.txtFecha.text = "${item.duracion}" // Aquí puedes concatenar la fecha

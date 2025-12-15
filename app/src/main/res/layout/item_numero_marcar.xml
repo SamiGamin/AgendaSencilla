@@ -31,7 +31,7 @@
         tools:text="Juan Pérez" />
 
     <TextView
-        android:id="@+id/tv_numero_telefono"
+        android:id="@+id/tv_Telefono"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/_18sdp"

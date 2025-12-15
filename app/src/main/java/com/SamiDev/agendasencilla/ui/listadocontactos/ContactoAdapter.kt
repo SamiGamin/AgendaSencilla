@@ -1,6 +1,5 @@
 package com.SamiDev.agendasencilla.ui.listadocontactos
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
@@ -8,120 +7,105 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.SamiDev.agendasencilla.R
-import com.SamiDev.agendasencilla.data.database.Contacto
+import com.SamiDev.agendasencilla.data.ContactoTelefono
 import com.SamiDev.agendasencilla.databinding.ItemContactoListaBinding
 import com.SamiDev.agendasencilla.util.GestorDeLlamadas
 import com.SamiDev.agendasencilla.util.LectorDeVoz
+import com.SamiDev.agendasencilla.util.PhoneNumberFormatter
 import com.bumptech.glide.Glide
 
+
+
 class ContactoAdapter(
-    private val onItemClicked: (Contacto) -> Unit,
-    private val onFavoritoClicked: (Contacto) -> Unit
-) :
-    ListAdapter<Contacto, ContactoAdapter.ContactoViewHolder>(DiffCallback) {
+    private val alHacerClicEnItem: (ContactoTelefono) -> Unit,
+    private val alHacerClicEnFavorito: (ContactoTelefono, Boolean) -> Unit
+) : ListAdapter<ContactoTelefono, ContactoAdapter.ContactoViewHolder>(DiffCallback) {
 
-    private var lecturaContactoHabilitada: Boolean = false
+    private var lecturaVozActivada: Boolean = false
 
-    inner class ContactoViewHolder(private val binding: ItemContactoListaBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-
-        init {
-            // Listener para el clic en el ítem completo
-            itemView.setOnClickListener {
-                val position = bindingAdapterPosition
-                if (position != RecyclerView.NO_POSITION) {
-                    val contacto = getItem(position)
-                    Log.d("ContactoAdapter", "Clic en item. Lectura habilitada: $lecturaContactoHabilitada")
-                    // Leer el nombre si la preferencia está activada
-                    if (lecturaContactoHabilitada) {
-                        LectorDeVoz.obtenerInstancia().leerEnVozAlta(contacto.nombreCompleto)
-                    }
-                    // Ejecutar la acción de edición/navegación
-                    onItemClicked(contacto)
-                }
-            }
-
-            // Listener para llamar al hacer clic en la foto
-            binding.ivFotoContacto.setOnClickListener {
-                val position = bindingAdapterPosition
-                if (position != RecyclerView.NO_POSITION) {
-                    val contacto = getItem(position)
-                    val textoParaLeer = "Llamando a ${contacto.nombreCompleto}"
-                    // Siempre leer en voz alta y luego llamar
-                    LectorDeVoz.obtenerInstancia().leerEnVozAlta(textoParaLeer, onDone = {
-                        GestorDeLlamadas.llamar(itemView.context, contacto.numeroTelefono)
-                    })
-                }
-            }
-
-            // Listener para el clic en el botón de favorito
-            binding.btnfavorito.setOnClickListener {
-                val position = bindingAdapterPosition
-                if (position != RecyclerView.NO_POSITION) {
-                    onFavoritoClicked(getItem(position))
-                }
-            }
-        }
-
-        fun bind(contacto: Contacto) {
-            binding.tvNombreContacto.text = contacto.nombreCompleto
-            binding.tvNumeroTelefono.text = contacto.numeroTelefono
-            binding.ivFotoContacto.backgroundTintList = ContextCompat.getColorStateList(itemView.context, R.color.md_theme_primary)
-            // Cargar imagen del contacto con Glide
-            Glide.with(itemView.context)
-                .load(contacto.fotoUri)
-                .placeholder(R.drawable.ic_face)
-                .error(R.drawable.ic_face)
-                .circleCrop()
-                .into(binding.ivFotoContacto)
-
-            // Actualizar el ícono y el fondo del botón de favorito según el estado del contacto
-            if (contacto.esFavorito) {
-                binding.btnfavorito.setIconResource(R.drawable.ic_favorite)
-                binding.btnfavorito.iconTint =
-                    ContextCompat.getColorStateList(itemView.context, R.color.md_theme_onPrimaryFixed)
-                binding.btnfavorito.backgroundTintList =
-                    ContextCompat.getColorStateList(itemView.context, R.color.md_theme_primary)
-            } else {
-                binding.btnfavorito.setIconResource(R.drawable.ic_favorito_borde) // Corregido para usar el ícono de borde
-                binding.btnfavorito.iconTint =
-                    ContextCompat.getColorStateList(itemView.context, R.color.md_theme_primary)
-                // Restaura el estilo outlined por defecto (sin tinte de fondo explícito)
-                binding.btnfavorito.backgroundTintList = null
-            }
-        }
+    // Método para actualizar la configuración de voz desde el Fragment
+    fun actualizarPreferenciaLectura(activada: Boolean) {
+        lecturaVozActivada = activada
+        // Notificamos cambios visuales si fueran necesarios (opcional)
+        notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactoViewHolder {
-        val binding = ItemContactoListaBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
+        val binding = ItemContactoListaBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ContactoViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ContactoViewHolder, position: Int) {
-        val contactoActual = getItem(position)
-        holder.bind(contactoActual)
+        val contacto = getItem(position)
+        holder.bind(contacto)
     }
 
-    /**
-     * Método público para actualizar el estado de la preferencia desde el Fragment.
-     */
-    fun actualizarPreferenciaLectura(estaActivada: Boolean) {
-        if (lecturaContactoHabilitada != estaActivada) {
-            Log.d("ContactoAdapter", "Adapter recibió nueva preferencia de lectura: $estaActivada")
-            lecturaContactoHabilitada = estaActivada
+    inner class ContactoViewHolder(private val binding: ItemContactoListaBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(contacto: ContactoTelefono) {
+            binding.tvNombre.text = contacto.nombreCompleto
+            binding.tvTelefono.text = PhoneNumberFormatter.formatearParaLectura(contacto.numeroTelefono)
+
+            // Estilos visuales del botón llamar (manteniendo tu diseño)
+            binding.btnLlamar.setIconTintResource(R.color.md_theme_onPrimaryFixed)
+            binding.btnLlamar.backgroundTintList = ContextCompat.getColorStateList(itemView.context, R.color.md_theme_primary)
+
+            // Carga de imagen con Glide
+            if (contacto.fotoUri != null) {
+                Glide.with(binding.root.context)
+                    .load(contacto.fotoUri)
+                    .circleCrop()
+                    .placeholder(R.drawable.ic_launcher_foreground) // Asegúrate de tener un placeholder
+                    .error(R.drawable.ic_launcher_foreground)
+                    .into(binding.ivFotoPerfil) // Asume que tienes un ImageView con este id
+            } else {
+                // Imagen por defecto si no tiene foto
+                binding.ivFotoPerfil.setImageResource(R.drawable.ic_launcher_foreground)
+            }
+            val iconoFavorito = R.drawable.ic_favorite // Asegúrate de tener este icono (corazón rojo/lleno)
+            val iconoNoFavorito = R.drawable.ic_favorito_borde // Asegúrate de tener este icono (corazón vacío)
+
+            if (contacto.esFavorito) {
+                binding.btnFavorito.setIconResource(iconoFavorito)
+            } else {
+                binding.btnFavorito.setIconResource(iconoNoFavorito)
+            }
+
+            binding.btnLlamar.setOnClickListener {
+                val textoParaLeer = "Llamando a ${contacto.nombreCompleto}"
+                LectorDeVoz.obtenerInstancia().leerEnVozAlta(textoParaLeer, onDone = {
+                    GestorDeLlamadas.llamar(itemView.context, contacto.numeroTelefono)
+                })
+            }
+            binding.btnFavorito.setOnClickListener {
+                // Invertimos el valor actual
+                val nuevoEstado = !contacto.esFavorito
+                contacto.esFavorito = nuevoEstado
+
+                // Actualizamos el icono visualmente al instante
+                if (nuevoEstado) {
+                    binding.btnFavorito.setIconResource(iconoFavorito)
+                    binding.btnFavorito.backgroundTintList = ContextCompat.getColorStateList(itemView.context, R.color.md_theme_onBackground_mediumContrast)
+                } else {
+                    binding.btnFavorito.setIconResource(iconoNoFavorito)
+                    binding.btnFavorito.backgroundTintList = ContextCompat.getColorStateList(itemView.context, android.R.color.transparent)
+                }
+
+                // Avisamos al fragmento
+                alHacerClicEnFavorito(contacto, nuevoEstado)
+            }
+
+            binding.root.setOnClickListener {
+                alHacerClicEnItem(contacto)
+            }
         }
     }
 
-    companion object DiffCallback : DiffUtil.ItemCallback<Contacto>() {
-        override fun areItemsTheSame(oldItem: Contacto, newItem: Contacto): Boolean {
+    companion object DiffCallback : DiffUtil.ItemCallback<ContactoTelefono>() {
+        override fun areItemsTheSame(oldItem: ContactoTelefono, newItem: ContactoTelefono): Boolean {
             return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: Contacto, newItem: Contacto): Boolean {
+        override fun areContentsTheSame(oldItem: ContactoTelefono, newItem: ContactoTelefono): Boolean {
             return oldItem == newItem
         }
     }

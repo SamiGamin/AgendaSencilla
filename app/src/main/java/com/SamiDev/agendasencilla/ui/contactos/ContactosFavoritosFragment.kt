@@ -5,25 +5,30 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.core.os.bundleOf
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.SamiDev.agendasencilla.R
-import com.SamiDev.agendasencilla.data.database.Contacto
+import com.SamiDev.agendasencilla.data.ContactoTelefono
 import com.SamiDev.agendasencilla.databinding.FragmentContactosFavoritosBinding
 import com.SamiDev.agendasencilla.util.LectorDeVoz
+import com.SamiDev.agendasencilla.util.Resultado
 import com.SamiDev.agendasencilla.util.adapter.FavoritosAdapter
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-@Suppress("DEPRECATION")
 class ContactosFavoritosFragment : Fragment() {
 
     private var _binding: FragmentContactosFavoritosBinding? = null
@@ -45,69 +50,97 @@ class ContactosFavoritosFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentContactosFavoritosBinding.inflate(inflater, container, false)
-        this.setHasOptionsMenu(true) // Indicar que este fragmento tiene su propio menú de opciones
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Inicializar el LectorDeVoz
         lectorDeVoz = LectorDeVoz.obtenerInstancia()
         lectorDeVoz.inicializar(requireContext())
 
+        configurarMenu()
         configurarRecyclerView()
         configurarObservadores()
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        val searchItem = menu.findItem(R.id.action_search)
-        val searchView = searchItem.actionView as? SearchView
-
-        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                return true
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                viewModel.actualizarTerminoBusqueda(newText.orEmpty())
-                return true
-            }
-        })
+    override fun onResume() {
+        super.onResume()
+        // IMPORTANTE: Recargamos los favoritos cada vez que la vista se hace visible
+        // por si el usuario agregó uno nuevo en la otra pestaña.
+        viewModel.cargarFavoritos()
     }
 
     private fun configurarRecyclerView() {
-        favoritosAdapter = FavoritosAdapter { contacto ->
-            manejarClicEnContacto(contacto)
-        }
+        favoritosAdapter = FavoritosAdapter() // Ya no necesita lambda de navegación, el adapter maneja los Intents
 
         binding.rvContactos.apply {
             adapter = favoritosAdapter
+            layoutManager = LinearLayoutManager(requireContext())
         }
     }
 
     private fun configurarObservadores() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.contactosFavoritos.collectLatest { listaDeContactosFavoritos ->
-                favoritosAdapter.submitList(listaDeContactosFavoritos)
-            }
-        }
-        viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.lecturaActivada.collectLatest { activada ->
-                    Log.d(TAG, "Fragmento observó cambio en preferencia de lectura: $activada. Actualizando adapter.")
-                    // Pasamos el estado de la preferencia al adapter
-                    favoritosAdapter.actualizarPreferenciaLectura(activada)
+
+                // Observar lista y estado
+                launch {
+                    viewModel.estadoUi.collectLatest { resultado ->
+                        manejarEstadoUi(resultado)
+                    }
+                }
+
+                // Observar lector
+                launch {
+                    viewModel.lecturaActivada.collectLatest { activada ->
+                        favoritosAdapter.actualizarPreferenciaLectura(activada)
+                    }
                 }
             }
         }
     }
 
-    private fun manejarClicEnContacto(contacto: Contacto) {
-        val bundle = bundleOf("contactId" to contacto.id)
-        findNavController().navigate(R.id.action_contactosFavoritosFragment_to_gestionContactoFragment, bundle)
+    private fun manejarEstadoUi(resultado: Resultado<List<ContactoTelefono>>) {
+        when(resultado) {
+            is Resultado.Cargando -> {
+                // Puedes mostrar un ProgressBar si tienes uno en el XML
+                // binding.progressBar.visibility = View.VISIBLE
+            }
+            is Resultado.Exito -> {
+                // binding.progressBar.visibility = View.GONE
+                favoritosAdapter.submitList(resultado.datos)
+                if (resultado.datos.isEmpty()) {
+                    // Opcional: Mostrar texto "No hay favoritos aún"
+                }
+            }
+            is Resultado.Error -> {
+                // binding.progressBar.visibility = View.GONE
+                Toast.makeText(requireContext(), resultado.mensaje, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun configurarMenu() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                // Asegúrate que este recurso R.menu.menu_contactos existe o usa uno genérico
+                menuInflater.inflate(R.menu.menu_contactos, menu)
+
+                val searchItem = menu.findItem(R.id.action_search)
+                val searchView = searchItem?.actionView as? SearchView
+
+                searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                    override fun onQueryTextSubmit(query: String?): Boolean = true
+                    override fun onQueryTextChange(newText: String?): Boolean {
+                        viewModel.actualizarTerminoBusqueda(newText.orEmpty())
+                        return true
+                    }
+                })
+            }
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean = false
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     override fun onDestroyView() {

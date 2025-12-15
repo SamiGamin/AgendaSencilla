@@ -29,7 +29,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.SamiDev.agendasencilla.R
 import com.SamiDev.agendasencilla.data.database.AppDatabase
-import com.SamiDev.agendasencilla.data.repository.ContactoRepositorio
+import com.SamiDev.agendasencilla.data.repository.ContactoTelefonoRepositorio
 import com.SamiDev.agendasencilla.data.repository.LlamadasRepositorio
 import com.SamiDev.agendasencilla.databinding.FragmentMarcarBinding
 import com.SamiDev.agendasencilla.util.PhoneNumberFormatter
@@ -46,12 +46,17 @@ class MarcarFragment : Fragment() {
     private val viewModel: MarcarViewModel by viewModels {
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val context = requireContext()
-                val dao = AppDatabase.obtenerInstancia(context).contactoDao()
-                val repo = ContactoRepositorio(dao,)
-                val repoLog = LlamadasRepositorio(context)
+                val context = requireContext().applicationContext
+                val database = AppDatabase.obtenerInstancia(context)
+
+                // Repositorio 1: Contactos (con soporte Favoritos)
+                val repoContactos = ContactoTelefonoRepositorio(context, database.favoritoDao())
+
+                // Repositorio 2: Llamadas
+                val repoLlamadas = LlamadasRepositorio(context)
+
                 @Suppress("UNCHECKED_CAST")
-                return MarcarViewModel(repo, repoLog) as T
+                return MarcarViewModel(repoContactos, repoLlamadas) as T
             }
         }
     }
@@ -304,8 +309,7 @@ class MarcarFragment : Fragment() {
 
     private fun configurarBotonLlamar() {
         binding.btnAgregar.setOnClickListener {
-            val numero = viewModel.obtenerNumeroParaLlamar()
-            if (numero.isNotEmpty()) llamar(numero)
+            viewModel.solicitarLlamada()
         }
     }
 

@@ -12,6 +12,6 @@
         android:id="@+id/configuracionFragment"
         android:icon="@drawable/ic_configuraciones"
         android:title="Configuración"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 
 </menu>

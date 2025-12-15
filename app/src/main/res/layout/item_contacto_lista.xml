@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/_8sdp"
+    android:layout_margin="@dimen/_2sdp"
     app:cardElevation="@dimen/_4sdp"
     app:cardCornerRadius="@dimen/_8sdp">
 
@@ -14,7 +14,7 @@
         android:padding="@dimen/_8sdp">
 
         <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/iv_foto_contacto"
+            android:id="@+id/iv_foto_Perfil"
             android:layout_width="@dimen/_60sdp"
             android:layout_height="@dimen/_60sdp"
             android:scaleType="centerCrop"
@@ -24,41 +24,56 @@
             tools:src="@tools:sample/avatars" /> <!-- Placeholder para la imagen -->
 
         <TextView
-            android:id="@+id/tv_nombre_contacto"
+            android:id="@+id/tv_nombre"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_8sdp"
-            android:textSize="@dimen/_12sdp"
+            android:layout_marginTop="1sp"
             android:layout_marginEnd="@dimen/_8sdp"
             android:textAppearance="?attr/textAppearanceTitleMedium"
-            app:layout_constraintEnd_toStartOf="@+id/btnfavorito"
-            app:layout_constraintStart_toEndOf="@+id/iv_foto_contacto"
-            app:layout_constraintTop_toTopOf="@+id/iv_foto_contacto"
+            android:textSize="@dimen/_12sdp"
+            app:layout_constraintEnd_toStartOf="@+id/btnFavorito"
+            app:layout_constraintStart_toEndOf="@+id/iv_foto_Perfil"
+            app:layout_constraintTop_toTopOf="@+id/iv_foto_Perfil"
             tools:text="Nombre Apellido" />
 
         <TextView
-            android:id="@+id/tv_numero_telefono"
+            android:id="@+id/tv_Telefono"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_8sdp"
             android:layout_marginEnd="@dimen/_8sdp"
-            android:textSize="@dimen/_11sdp"
             android:textAppearance="?attr/textAppearanceBodyMedium"
-            app:layout_constraintBottom_toBottomOf="@+id/iv_foto_contacto"
-            app:layout_constraintEnd_toStartOf="@+id/btnfavorito"
-            app:layout_constraintStart_toEndOf="@+id/iv_foto_contacto"
-            app:layout_constraintTop_toBottomOf="@+id/tv_nombre_contacto"
+            android:textSize="@dimen/_11sdp"
+            app:layout_constraintEnd_toStartOf="@+id/btnFavorito"
+            app:layout_constraintStart_toEndOf="@+id/iv_foto_Perfil"
+            app:layout_constraintTop_toBottomOf="@+id/tv_nombre"
             tools:text="123456789" />
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnfavorito"
+            android:id="@+id/btnFavorito"
             style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="@dimen/_30sdp"
+            android:layout_width="@dimen/_33sdp"
             android:layout_height="@dimen/_30sdp"
             app:icon="@drawable/ic_favorito_borde"
             app:iconGravity="textStart"
+            android:layout_marginStart="@dimen/_1sdp"
             app:iconPadding="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLlamar"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="@dimen/_75sdp"
+            android:layout_height="@dimen/_24sdp"
+            android:contentDescription="Llamar"
+            app:icon="@drawable/ic_call"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnFavorito"
+            app:layout_constraintStart_toEndOf="@+id/iv_foto_Perfil"
+            app:layout_constraintTop_toBottomOf="@+id/tv_Telefono" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

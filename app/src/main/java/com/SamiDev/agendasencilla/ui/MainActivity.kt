@@ -27,9 +27,8 @@ import com.SamiDev.agendasencilla.R
 import com.SamiDev.agendasencilla.data.database.AppDatabase
 import com.SamiDev.agendasencilla.data.preferencias.OpcionTamanoFuente
 import com.SamiDev.agendasencilla.data.preferencias.PreferenciasManager
-import com.SamiDev.agendasencilla.data.repository.ContactoRepositorio
+import com.SamiDev.agendasencilla.data.repository.ContactoTelefonoRepositorio
 import com.SamiDev.agendasencilla.databinding.ActivityMainBinding
-import com.SamiDev.agendasencilla.util.ContactosImporter
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
@@ -40,7 +39,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var preferenciasManager: PreferenciasManager
 
-    private lateinit var contactosImporter: ContactosImporter
     private lateinit var permisoLauncher: ActivityResultLauncher<String>
     companion object {
         private const val REQUEST_CODE_CALL_PHONE = 101
@@ -62,21 +60,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val database = AppDatabase.obtenerInstancia(application)
-        val repository = ContactoRepositorio(database.contactoDao())
-        contactosImporter = ContactosImporter(
-            context = this,
-            repository = repository,
-            onEstadoChanged = { mensaje ->
-                Snackbar.make(binding.root, mensaje, Snackbar.LENGTH_LONG).show()
-            },
-            onImportacionEnCurso = { /* opcional: mostrar progress global si quieres */ }
-        )
 
         permisoLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             if (granted) {
                 lifecycleScope.launch {
-                    contactosImporter.importarContactosDelDispositivo()
+
                 }
             }
         }
@@ -139,8 +127,8 @@ class MainActivity : AppCompatActivity() {
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
                 R.id.contactosFavoritosFragment->{
-                    binding.fabAnadirContacto.setImageResource(R.drawable.upload_24dp)  // o ic_favorite_border
-                    binding.fabAnadirContacto.contentDescription = "Marcar"
+                    binding.fabAnadirContacto.setImageResource(R.drawable.person_add)
+                    binding.fabAnadirContacto.contentDescription = "Añadir nuevo contacto"
                     binding.fabAnadirContacto.show()
                 }
                 R.id.listadocontactosFragment -> {
@@ -171,12 +159,7 @@ class MainActivity : AppCompatActivity() {
                     navController.navigate(R.id.action_listadocontactosFragment_to_gestionContactoFragment)
                 }
                 R.id.contactosFavoritosFragment -> {
-                    if (contactosImporter.intentarImportar(permisoLauncher)) {
-                        // Solo si tiene permiso, lanzamos la corrutina
-                        lifecycleScope.launch {
-                            contactosImporter.importarContactosDelDispositivo()
-                        }
-                    }
+                    navController.navigate(R.id.action_contactosFavoritosFragment_to_gestionContactoFragment)
                 }
                 // Puedes agregar más si es necesario
             }
@@ -212,25 +195,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_contactos, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        return when (item.itemId) {
-            R.id.action_search -> {
-                Toast.makeText(this, "Acción de búsqueda seleccionada", Toast.LENGTH_SHORT).show()
-                true
-            }
-
-            else -> NavigationUI.onNavDestinationSelected(
-                item,
-                navController
-            ) || super.onOptionsItemSelected(item)
-        }
-    }
 
     override fun onSupportNavigateUp(): Boolean {
         return NavigationUI.navigateUp(

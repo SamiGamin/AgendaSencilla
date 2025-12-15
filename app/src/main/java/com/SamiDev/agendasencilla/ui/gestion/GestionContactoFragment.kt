@@ -23,75 +23,47 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.SamiDev.agendasencilla.R
-import com.SamiDev.agendasencilla.data.database.Contacto
+import com.SamiDev.agendasencilla.data.ContactoTelefono
 import com.SamiDev.agendasencilla.databinding.FragmentGestionContactoBinding
-import com.SamiDev.agendasencilla.util.ContactosImporter
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class GestionContactoFragment : Fragment() {
 
     private var _binding: FragmentGestionContactoBinding? = null
     private val binding get() = _binding!!
-    private lateinit var contactosImporter: ContactosImporter
 
     private val viewModel: GestionContactoViewModel by viewModels {
         GestionContactoViewModelFactory(requireActivity().application)
     }
 
-    private lateinit var requestPermisoLauncher: ActivityResultLauncher<String>
-    private lateinit var selectorImagenLauncher: ActivityResultLauncher<String>
-    private var fotoSeleccionadaUri: Uri? = null
+    private var contactoId: String? = null // El ID ahora es String
+    private var contactoActual: ContactoTelefono? = null
 
-    private var contactoId: Int = -1
-    private var esModoEdicion = false
+    // Launcher para permiso de escritura (necesario para guardar cambios)
+    private val permisoEscrituraLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { esConcedido ->
+        if (esConcedido) {
+            intentarGuardar()
+        } else {
+            Toast.makeText(requireContext(), "Se necesita permiso para editar contactos", Toast.LENGTH_LONG).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Recupera el ID del contacto desde los argumentos de navegación.
+        // Recuperamos el ID. Ahora los IDs de Android son Strings
         arguments?.let {
-            contactoId = it.getInt("contactId", -1)
-            esModoEdicion = contactoId != -1
+            // Intenta obtener como String, si falla intenta como Int y convierte
+            contactoId = it.getString("contactId") ?: it.getInt("contactId", -1).toString()
         }
-        contactosImporter = ContactosImporter(
-            context = requireContext(),
-            repository = viewModel.repository, // Asegúrate de que tu ViewModel exponga el repository
-            onEstadoChanged = { mensaje ->
-                Snackbar.make(binding.root, mensaje, Snackbar.LENGTH_LONG).show()
-            },
-            onImportacionEnCurso = { enCurso ->
-                binding.btnImportarContactos.isEnabled = !enCurso
-            }
-        )
-
-        requestPermisoLauncher =
-            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-                if (isGranted) {
-                    viewModel.importarContactosDelDispositivo()
-                } else {
-                    Snackbar.make(
-                        binding.root,
-                        "El permiso para leer contactos es necesario para la importación.",
-                        Snackbar.LENGTH_LONG
-                    ).show()
-                }
-            }
-
-        selectorImagenLauncher =
-            registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-                uri?.let {
-                    fotoSeleccionadaUri = it
-                    cargarImagenConGlide(it)
-                }
-            }
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentGestionContactoBinding.inflate(inflater, container, false)
         return binding.root
@@ -99,16 +71,122 @@ class GestionContactoFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        configurarListeners()
+
         setupMenu()
+        configurarUI()
+        cargarDatos()
+        observarViewModel()
+    }
 
+    private fun configurarUI() {
+        // Ocultamos el botón importar porque ya no existe esa función
+        binding.btnImportarContactos.visibility = View.GONE
 
-        if (esModoEdicion) {
-            prepararUIModoEdicion()
-            viewModel.cargarContacto(contactoId)
-            observarContactoCargado()
+        // Ajustamos textos
+        if (contactoId != null && contactoId != "-1") {
+            binding.btnGuardarContacto.text = "Guardar Cambios"
         } else {
-            cargarImagenPorDefecto()
+            // Si es nuevo, sugerimos usar la app nativa (opcional)
+            binding.btnGuardarContacto.text = "Crear Contacto"
+        }
+
+        binding.btnGuardarContacto.setOnClickListener {
+            verificarPermisoYGuardar()
+        }
+
+        // La edición de foto localmente es muy compleja (gestión de archivos raw).
+        // Por ahora deshabilitamos el clic en la foto o lanzamos Intent nativo.
+        binding.ivFotoContactoDetalle.setOnClickListener {
+            Toast.makeText(requireContext(), "La foto se gestiona desde la app Contactos", Toast.LENGTH_SHORT).show()
+        }
+        binding.btnSeleccionarFoto.visibility = View.GONE // Ocultamos botón de cambiar foto
+    }
+
+    private fun cargarDatos() {
+        contactoId?.let { id ->
+            if (id != "-1") {
+                viewModel.cargarContacto(id)
+            }
+        }
+    }
+
+    private fun observarViewModel() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+
+                // Observar carga del contacto
+                launch {
+                    viewModel.contactoCargado.collectLatest { contacto ->
+                        contacto?.let {
+                            contactoActual = it
+                            poblarDatos(it)
+                        }
+                    }
+                }
+
+                // Observar resultado de guardado
+                launch {
+                    viewModel.estadoGuardado.collectLatest { guardado ->
+                        if (guardado == true) {
+                            Toast.makeText(requireContext(), "Contacto actualizado correctamente", Toast.LENGTH_SHORT).show()
+                            viewModel.reiniciarEstadoGuardado()
+                            findNavController().popBackStack()
+                        } else if (guardado == false) {
+                            Toast.makeText(requireContext(), "Error al guardar cambios", Toast.LENGTH_SHORT).show()
+                            viewModel.reiniciarEstadoGuardado()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun poblarDatos(contacto: ContactoTelefono) {
+        binding.etNombreCompleto.setText(contacto.nombreCompleto)
+        binding.etNumeroTelefono.setText(contacto.numeroTelefono)
+        binding.switchFavorito.isChecked = contacto.esFavorito
+
+        // Notas: Android ContactsContract tiene notas, pero requiere permisos complejos.
+        // Por simplicidad, ocultamos o dejamos el campo notas inactivo si no queremos lidiar con ello.
+        binding.etNotasContacto.isEnabled = false
+        binding.etNotasContacto.hint = "Notas (Solo lectura)"
+
+        if (contacto.fotoUri != null) {
+            Glide.with(this)
+                .load(contacto.fotoUri)
+                .circleCrop()
+                .into(binding.ivFotoContactoDetalle)
+        } else {
+            binding.ivFotoContactoDetalle.setImageResource(R.drawable.ic_perm_identity)
+        }
+    }
+
+    private fun verificarPermisoYGuardar() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_CONTACTS)
+            == PackageManager.PERMISSION_GRANTED) {
+            intentarGuardar()
+        } else {
+            permisoEscrituraLauncher.launch(Manifest.permission.WRITE_CONTACTS)
+        }
+    }
+
+    private fun intentarGuardar() {
+        val nuevoNombre = binding.etNombreCompleto.text.toString().trim()
+        val nuevoTelefono = binding.etNumeroTelefono.text.toString().trim()
+        val esFavorito = binding.switchFavorito.isChecked
+
+        if (nuevoNombre.isEmpty() || nuevoTelefono.isEmpty()) {
+            Toast.makeText(requireContext(), "Nombre y teléfono requeridos", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (contactoActual != null) {
+            // Edición
+            viewModel.guardarCambios(contactoActual!!, nuevoNombre, nuevoTelefono, esFavorito)
+        } else {
+            // Creación (Si llegaste aquí sin ID)
+            // Aquí podrías implementar la lógica de insertar un nuevo RawContact
+            Toast.makeText(requireContext(), "Usa el botón + en la lista principal para crear", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -116,161 +194,11 @@ class GestionContactoFragment : Fragment() {
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menu.clear()
+                menu.clear() // Limpiamos menú si no queremos opciones extra aquí
             }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return false
-            }
-
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean = false
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-
     }
-
-    private fun configurarListeners() {
-        binding.btnGuardarContacto.setOnClickListener {
-            guardarContacto()
-        }
-
-        binding.btnImportarContactos.setOnClickListener {
-            if (contactosImporter.intentarImportar(requestPermisoLauncher)) {
-                viewLifecycleOwner.lifecycleScope.launch {
-                    contactosImporter.importarContactosDelDispositivo()
-                }
-            }
-        }
-
-        binding.ivFotoContactoDetalle.setOnClickListener {
-            selectorImagenLauncher.launch("image/*")
-        }
-
-        binding.btnSeleccionarFoto.setOnClickListener {
-            selectorImagenLauncher.launch("image/*")
-        }
-    }
-
-    private fun prepararUIModoEdicion() {
-        binding.btnGuardarContacto.text = "Actualizar Contacto"
-        binding.btnImportarContactos.visibility = View.GONE
-    }
-
-    private fun observarContactoCargado() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.contactoCargado.collect { contacto ->
-                    contacto?.let { poblarDatosEnUI(it) }
-                }
-            }
-        }
-    }
-
-    private fun poblarDatosEnUI(contacto: Contacto) {
-        binding.etNombreCompleto.setText(contacto.nombreCompleto)
-        binding.etNumeroTelefono.setText(contacto.numeroTelefono)
-        binding.etNotasContacto.setText(contacto.notas)
-        binding.switchFavorito.isChecked = contacto.esFavorito
-
-        if (contacto.fotoUri != null) {
-            fotoSeleccionadaUri = Uri.parse(contacto.fotoUri)
-            cargarImagenConGlide(fotoSeleccionadaUri)
-        } else {
-            cargarImagenPorDefecto()
-        }
-    }
-
-//    private fun solicitarPermisoYImportarContactos() {
-//        when {
-//            ContextCompat.checkSelfPermission(
-//                requireContext(),
-//                Manifest.permission.READ_CONTACTS
-//            ) == PackageManager.PERMISSION_GRANTED -> {
-//                viewModel.importarContactosDelDispositivo()
-//            }
-//
-//            shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS) -> {
-//                Snackbar.make(
-//                    binding.root,
-//                    "Se necesita acceso a tus contactos para importarlos a la agenda.",
-//                    Snackbar.LENGTH_INDEFINITE
-//                )
-//                    .setAction("ENTENDIDO") { requestPermisoLauncher.launch(Manifest.permission.READ_CONTACTS) }
-//                    .show()
-//            }
-//
-//            else -> {
-//                requestPermisoLauncher.launch(Manifest.permission.READ_CONTACTS)
-//            }
-//        }
-//    }
-
-    /*    private fun configurarObservadoresDeImportacion() {
-            viewLifecycleOwner.lifecycleScope.launch {
-                repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    launch {
-                        viewModel.importacionEnCurso.collect { enCurso ->
-                            binding.btnImportarContactos.isEnabled = !enCurso
-                        }
-                    }
-                    launch {
-                        viewModel.estadoImportacion.collect { mensaje ->
-                            mensaje?.let {
-                                Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
-                                viewModel.limpiarEstadoImportacion()
-                            }
-                        }
-                    }
-                }
-            }
-        }*/
-
-    private fun guardarContacto() {
-        val nombre = binding.etNombreCompleto.text.toString().trim()
-        val telefono = binding.etNumeroTelefono.text.toString().trim()
-        val notas = binding.etNotasContacto.text.toString().trim()
-        val esFavorito = binding.switchFavorito.isChecked
-
-        if (validarEntradas(nombre, telefono)) {
-            val contactoParaGuardar = Contacto(
-                id = if (esModoEdicion) contactoId else 0,
-                nombreCompleto = nombre,
-                numeroTelefono = telefono,
-                fotoUri = fotoSeleccionadaUri?.toString(),
-                esFavorito = esFavorito,
-                notas = notas
-            )
-
-            viewModel.guardarContacto(contactoParaGuardar)
-
-            val mensaje = if (esModoEdicion) "Contacto actualizado" else "Contacto guardado"
-            Toast.makeText(requireContext(), mensaje, Toast.LENGTH_SHORT).show()
-            findNavController().popBackStack()
-
-        } else {
-            Toast.makeText(
-                requireContext(),
-                "Por favor, complete el nombre y el teléfono",
-                Toast.LENGTH_LONG
-            ).show()
-        }
-    }
-
-    private fun validarEntradas(nombre: String, telefono: String): Boolean {
-        return nombre.isNotEmpty() && telefono.isNotEmpty()
-    }
-
-    private fun cargarImagenConGlide(uri: Uri?) {
-        Glide.with(this)
-            .load(uri)
-            .placeholder(R.drawable.ic_perm_identity)
-            .error(R.drawable.ic_perm_identity)
-            .circleCrop()
-            .into(binding.ivFotoContactoDetalle)
-    }
-
-    private fun cargarImagenPorDefecto() {
-        cargarImagenConGlide(null)
-    }
-
 
     override fun onDestroyView() {
         super.onDestroyView()
