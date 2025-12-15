@@ -1,68 +1,88 @@
 # Agenda Sencilla
 
 ![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android)
+![Language](https://img.shields.io/badge/Language-Kotlin-7F52FF?style=for-the-badge&logo=kotlin)
+![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)
 
-Una aplicación de contactos para Android diseñada específicamente para adultos mayores, enfocándose en la simplicidad, accesibilidad y facilidad de uso.
-
-## 🌟 Sobre el Proyecto
-
-La tecnología moderna a menudo puede resultar abrumadora. "Agenda Sencilla" nace con el objetivo de eliminar esa barrera, ofreciendo una experiencia de gestión de contactos que prioriza la claridad visual sobre la complejidad funcional. En lugar de largas listas de texto y menús ocultos, la aplicación se centra en una interfaz gráfica con fotos grandes y acciones directas, haciendo que llamar o enviar un mensaje sea una tarea intuitiva y libre de estrés.
+**Agenda Sencilla** es una aplicación de gestión de contactos y llamadas para Android, diseñada meticulosamente pensando en la **simplicidad y la accesibilidad**. Su objetivo principal es facilitar el uso del teléfono a personas mayores o a cualquier usuario que prefiera una interfaz limpia, directa y sin distracciones.
 
 ---
 
-## 🖼️ Capturas de Pantalla
+## 🌟 Características Principales
 
-*(Consejo: Para añadir capturas, simplemente arrastra los archivos de imagen a la web de GitHub dentro de este archivo y se generará el enlace automáticamente.)*
+### 👥 Gestión de Contactos Simplificada
+*   **Integración Nativa**: Lee y muestra los contactos directamente de la agenda del teléfono.
+*   **Búsqueda Rápida**: Barra de búsqueda intuitiva para encontrar contactos por nombre o número instantáneamente.
+*   **Detalles Claros**: Visualización limpia de la información del contacto con opciones grandes para llamar.
 
-| Pantalla Principal | Añadir Contacto |
-| :---: | :---: |
-| ![Pantalla Principal](ruta/a/tu/captura_principal.png) | ![Pantalla Añadir](ruta/a/tu/captura_añadir.png) |
+### ⭐ Favoritos (Acceso Rápido)
+*   **Lista de Prioridad**: Sección dedicada para los contactos más frecuentes.
+*   **Gestión Local**: Posibilidad de marcar/desmarcar favoritos, guardando esta preferencia localmente (usando Room Database) sin afectar la agenda nativa del dispositivo.
+*   **Búsqueda en Favoritos**: Filtra rápidamente dentro de tu lista de personas importantes.
 
----
+### 📞 Marcador Inteligente (Smart Dialer)
+*   **Teclas Grandes**: Diseñado para una fácil visualización y pulsación.
+*   **Búsqueda T9 / Sugerencias**: Al marcar números, la app sugiere contactos coincidentes en tiempo real.
+*   **Historial Integrado**: Acceso directo al registro de llamadas (Entrantes, Salientes, Perdidas) desde la misma pantalla de marcación.
+*   **Código de Colores**: Identificación visual rápida del tipo de llamada (Verde: Entrante, Azul: Saliente, Rojo: Perdida).
 
-## ✨ Características Principales
-
--   **📱 Interfaz Visual y Sencilla:** La pantalla principal es una cuadrícula de fotos grandes de los contactos favoritos.
--   **👆 Acciones con un Toque:** Botones grandes y claros debajo de cada contacto para **Llamar** y **Enviar Mensaje** de forma inmediata.
--   **👓 Alta Accesibilidad:**
-    -   Textos de gran tamaño por defecto.
-    -   Opciones en la configuración para aumentar aún más el tamaño de la fuente.
-    -   Temas de color de alto contraste para una legibilidad óptima.
--   **💾 Persistencia Local:** Todos los contactos se guardan de forma segura en el dispositivo, por lo que la aplicación funciona perfectamente sin conexión a internet.
--   **➕ Gestión de Contactos Simplificada:** Un formulario de un solo paso para añadir o editar contactos, con campos grandes y etiquetas claras.
+### 👓 Accesibilidad y Personalización
+*   **Lector de Voz (TTS)**: La app puede leer en voz alta el nombre del contacto antes de llamar, proporcionando una confirmación auditiva.
+*   **Tamaño de Fuente Ajustable**: Configuración global para cambiar el tamaño del texto:
+    *   *Normal*
+    *   *Grande*
+    *   *Más Grande*
+*   **Temas**: Soporte completo para Tema Claro y Tema Oscuro (o seguir el sistema), optimizando la legibilidad en cualquier entorno de luz.
 
 ---
 
 ## 🛠️ Tecnologías y Arquitectura
 
-Este proyecto está construido siguiendo las mejores prácticas recomendadas por Google para el desarrollo moderno de Android.
+El proyecto está construido siguiendo los estándares modernos de desarrollo Android (Modern Android Development - MAD).
 
--   **Lenguaje:** **Kotlin** 100%.
--   **Arquitectura:** **MVVM (Model-View-ViewModel)** para una clara separación de responsabilidades.
--   **Interfaz de Usuario:**
-    -   **XML** para la construcción de layouts.
-    -   **View Binding** para un acceso seguro y eficiente a las vistas.
-    -   **Material 3** para un diseño moderno y consistente.
--   **Base de Datos:** **Room Persistence Library** como capa de abstracción sobre SQLite.
--   **Navegación:** **Android Navigation Component** para gestionar el flujo entre fragments.
--   **Asincronía:** **Coroutines y Flow** para manejar operaciones en segundo plano de forma eficiente.
+*   **Lenguaje**: [Kotlin](https://kotlinlang.org/) (100%).
+*   **Patrón de Arquitectura**: **MVVM** (Model-View-ViewModel) para separar la lógica de negocio de la UI y manejar el ciclo de vida de forma segura.
+*   **Inyección de Dependencias**: Gestión manual eficiente de dependencias (Singleton para Base de Datos y Preferencias).
+*   **Persistencia de Datos**:
+    *   **Room Database**: Para almacenar la lista de favoritos localmente.
+    *   **SharedPreferences**: Para guardar las preferencias de usuario (Tema, Tamaño de fuente, TTS).
+*   **Programación Asíncrona**: **Coroutines** y **Kotlin Flow** (StateFlow, SharedFlow) para operaciones en segundo plano y gestión reactiva del estado de la UI.
+*   **Interfaz de Usuario (UI)**:
+    *   **XML Layouts** con **ViewBinding**.
+    *   **Material Design 3**: Uso de componentes modernos como `MaterialButton`, `BottomNavigationView`, `FloatingActionButton`.
+    *   **ConstraintLayout**: Para diseños flexibles y responsivos.
+*   **Navegación**: **Jetpack Navigation Component** (Single Activity Architecture).
+*   **Carga de Imágenes**: [Glide](https://github.com/bumptech/glide) para cargar y cachear fotos de contactos eficientemente.
 
 ---
 
-## 🚀 Cómo Compilar y Ejecutar
+## 🔐 Permisos Solicitados
 
-Para compilar y ejecutar el proyecto en tu máquina local, sigue estos sencillos pasos:
+Para funcionar correctamente como una agenda telefónica, la app requiere los siguientes permisos:
 
-1.  **Clona el repositorio**
-    ```sh
+1.  `READ_CONTACTS`: Necesario para mostrar la lista de contactos del dispositivo.
+2.  `CALL_PHONE`: Permite realizar llamadas directamente desde la app sin tener que abrir el marcador nativo.
+3.  `READ_CALL_LOG`: Permite mostrar el historial de llamadas recientes en la pantalla de marcación.
+
+*Nota: La aplicación maneja la solicitud de estos permisos en tiempo de ejecución, explicando al usuario si son necesarios.*
+
+---
+
+## 🚀 Instalación y Pruebas
+
+1.  Clona este repositorio:
+    ```bash
     git clone https://github.com/tu-usuario/Agenda-Sencilla.git
     ```
-2.  **Abre el proyecto** en la última versión estable de Android Studio.
-3.  **Sincroniza Gradle** para que descargue todas las dependencias necesarias.
-4.  **Ejecuta la aplicación** en un emulador o en un dispositivo físico.
+2.  Abre el proyecto en **Android Studio**.
+3.  Sincroniza el proyecto con Gradle.
+4.  Ejecuta la app en un emulador o dispositivo físico.
 
 ---
 
 ## 📄 Licencia
 
-Distribuido bajo la Licencia MIT. Ver `LICENSE` para más información.
+Este proyecto se distribuye bajo la licencia MIT. Eres libre de usarlo, modificarlo y distribuirlo.
+
+---
+*Desarrollado con ❤️ para simplificar la tecnología.*

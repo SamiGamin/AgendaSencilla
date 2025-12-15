@@ -1,7 +1,6 @@
 package com.SamiDev.agendasencilla.ui.contactos
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -10,7 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
-import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -30,6 +28,10 @@ import com.SamiDev.agendasencilla.util.adapter.FavoritosAdapter
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+/**
+ * Fragmento que muestra la lista de contactos favoritos.
+ * Permite buscar entre los favoritos y acceder a su detalle.
+ */
 class ContactosFavoritosFragment : Fragment() {
 
     private var _binding: FragmentContactosFavoritosBinding? = null
@@ -41,10 +43,6 @@ class ContactosFavoritosFragment : Fragment() {
 
     private lateinit var favoritosAdapter: FavoritosAdapter
     private lateinit var lectorDeVoz: LectorDeVoz
-
-    companion object {
-        private const val TAG = "ContactosFavoritosFrag"
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -67,13 +65,15 @@ class ContactosFavoritosFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // IMPORTANTE: Recargamos los favoritos cada vez que la vista se hace visible
-        // por si el usuario agregó uno nuevo en la otra pestaña.
+        // Recargamos los favoritos al volver a la pantalla para asegurar datos actualizados
         viewModel.cargarFavoritos()
     }
 
+    /**
+     * Configura el RecyclerView y su adaptador.
+     */
     private fun configurarRecyclerView() {
-        favoritosAdapter = FavoritosAdapter() // Ya no necesita lambda de navegación, el adapter maneja los Intents
+        favoritosAdapter = FavoritosAdapter()
 
         binding.rvContactos.apply {
             adapter = favoritosAdapter
@@ -81,10 +81,12 @@ class ContactosFavoritosFragment : Fragment() {
         }
     }
 
+    /**
+     * Configura los observadores del ViewModel.
+     */
     private fun configurarObservadores() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-
                 // Observar lista y estado
                 launch {
                     viewModel.estadoUi.collectLatest { resultado ->
@@ -92,7 +94,7 @@ class ContactosFavoritosFragment : Fragment() {
                     }
                 }
 
-                // Observar lector
+                // Observar estado del lector
                 launch {
                     viewModel.lecturaActivada.collectLatest { activada ->
                         favoritosAdapter.actualizarPreferenciaLectura(activada)
@@ -102,37 +104,36 @@ class ContactosFavoritosFragment : Fragment() {
         }
     }
 
+    /**
+     * Gestiona los cambios en el estado de la UI (Cargando, Éxito, Error).
+     */
     private fun manejarEstadoUi(resultado: Resultado<List<ContactoTelefono>>) {
         when(resultado) {
             is Resultado.Cargando -> {
-                // Puedes mostrar un ProgressBar si tienes uno en el XML
-                // binding.progressBar.visibility = View.VISIBLE
+                // Opcional: Mostrar indicador de carga
             }
             is Resultado.Exito -> {
-                // binding.progressBar.visibility = View.GONE
                 favoritosAdapter.submitList(resultado.datos)
                 if (resultado.datos.isEmpty()) {
-                    // Opcional: Mostrar texto "No hay favoritos aún"
+                    // Opcional: Mostrar indicación de lista vacía
                 }
             }
             is Resultado.Error -> {
-                // binding.progressBar.visibility = View.GONE
                 Toast.makeText(requireContext(), resultado.mensaje, Toast.LENGTH_SHORT).show()
             }
         }
     }
 
+    /**
+     * Configura el menú de opciones del fragmento.
+     */
     private fun configurarMenu() {
         val menuHost: MenuHost = requireActivity()
 
-        // Añadimos el MenuProvider asociado al ciclo de vida de la vista (viewLifecycleOwner)
         menuHost.addMenuProvider(object : MenuProvider {
-
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                // 1. Inflar el menú
                 menuInflater.inflate(R.menu.menu_contactos, menu)
 
-                // 2. Configurar el SearchView
                 val searchItem = menu.findItem(R.id.action_search)
                 val searchView = searchItem?.actionView as? SearchView
 
@@ -149,12 +150,8 @@ class ContactosFavoritosFragment : Fragment() {
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                // 3. Manejar clics en opciones del menú
                 return when (menuItem.itemId) {
-                    R.id.action_search -> {
-                        // El SearchView ya se maneja solo, pero retornamos true para indicar consumo
-                        true
-                    }
+                    R.id.action_search -> true
                     else -> {
                        NavigationUI.onNavDestinationSelected(menuItem, findNavController())
                         false
@@ -162,7 +159,6 @@ class ContactosFavoritosFragment : Fragment() {
                 }
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-
     }
 
     override fun onDestroyView() {

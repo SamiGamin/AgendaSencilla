@@ -16,8 +16,13 @@ import com.SamiDev.agendasencilla.util.GestorDeLlamadas
 import com.SamiDev.agendasencilla.util.LectorDeVoz
 import com.SamiDev.agendasencilla.util.PhoneNumberFormatter
 import com.bumptech.glide.Glide
+
+/**
+ * Adaptador para mostrar la lista de contactos favoritos en un RecyclerView.
+ * Gestiona la visualización de datos, carga de imágenes e interacciones como llamadas y edición.
+ */
 class FavoritosAdapter : ListAdapter<ContactoTelefono, FavoritosAdapter.FavoritoViewHolder>(
-    ContactoAdapter.DiffCallback // Reusamos el DiffCallback del otro adapter
+    ContactoAdapter.DiffCallback
 ) {
     private var lecturaContactoHabilitada: Boolean = false
 
@@ -25,21 +30,24 @@ class FavoritosAdapter : ListAdapter<ContactoTelefono, FavoritosAdapter.Favorito
         private val TAG = FavoritosAdapter::class.java.simpleName
     }
 
+    /**
+     * ViewHolder para los elementos de la lista de favoritos.
+     */
     inner class FavoritoViewHolder(private val binding: ItemContactoBinding) : RecyclerView.ViewHolder(binding.root) {
+        /**
+         * Vincula los datos del contacto con las vistas.
+         *
+         * @param contacto El objeto [ContactoTelefono] a mostrar.
+         */
         fun bind(contacto: ContactoTelefono) {
-
-            // Datos básicos
             binding.tvNombreContacto.text = contacto.nombreCompleto
-            binding.tvNombreContacto.isSelected = true // Para efecto marquesina si es muy largo
+            binding.tvNombreContacto.isSelected = true
 
-            // Formateo del número
             binding.tvTelefonoContacto.text = PhoneNumberFormatter.formatearParaLectura(contacto.numeroTelefono)
 
-            // Estilos visuales del botón llamar (manteniendo tu diseño)
             binding.btnLlamar.setIconTintResource(R.color.md_theme_onPrimaryFixed)
             binding.btnLlamar.backgroundTintList = ContextCompat.getColorStateList(itemView.context, R.color.md_theme_primary)
 
-            // Carga de foto
             if (contacto.fotoUri != null) {
                 Glide.with(itemView.context)
                     .load(contacto.fotoUri)
@@ -51,7 +59,6 @@ class FavoritosAdapter : ListAdapter<ContactoTelefono, FavoritosAdapter.Favorito
                 binding.ivFotoContacto.setImageResource(R.drawable.ic_face)
             }
 
-            // BOTÓN LLAMAR
             binding.btnLlamar.setOnClickListener {
                 val textoParaLeer = "Llamando a ${contacto.nombreCompleto}"
                 LectorDeVoz.obtenerInstancia().leerEnVozAlta(textoParaLeer, onDone = {
@@ -59,8 +66,6 @@ class FavoritosAdapter : ListAdapter<ContactoTelefono, FavoritosAdapter.Favorito
                 })
             }
 
-            // BOTÓN EDITAR (Ahora: Ver detalle en Android)
-            // Ya no editamos localmente, así que abrimos la ficha del sistema.
             binding.btnEditarContacto.setOnClickListener {
                 try {
                     val intent = Intent(Intent.ACTION_VIEW)
@@ -72,7 +77,6 @@ class FavoritosAdapter : ListAdapter<ContactoTelefono, FavoritosAdapter.Favorito
                 }
             }
 
-            // CLIC EN LA TARJETA (Lectura de voz)
             itemView.setOnClickListener {
                 if (lecturaContactoHabilitada) {
                     val textoParaLeer = contacto.nombreCompleto
@@ -92,6 +96,11 @@ class FavoritosAdapter : ListAdapter<ContactoTelefono, FavoritosAdapter.Favorito
         holder.bind(getItem(position))
     }
 
+    /**
+     * Actualiza la preferencia de lectura en voz alta al tocar un contacto.
+     *
+     * @param estaActivada `true` si la lectura está habilitada, `false` en caso contrario.
+     */
     fun actualizarPreferenciaLectura(estaActivada: Boolean) {
         lecturaContactoHabilitada = estaActivada
     }

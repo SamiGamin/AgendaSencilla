@@ -1,7 +1,6 @@
 package com.SamiDev.agendasencilla.ui.contactos
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -10,7 +9,6 @@ import com.SamiDev.agendasencilla.data.database.AppDatabase
 import com.SamiDev.agendasencilla.data.preferencias.PreferenciasManager
 import com.SamiDev.agendasencilla.data.repository.ContactoTelefonoRepositorio
 import com.SamiDev.agendasencilla.util.Resultado
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,12 +16,17 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
+/**
+ * ViewModel para el fragmento de Contactos Favoritos.
+ * Gestiona la carga de favoritos, el filtrado por búsqueda y las preferencias de usuario.
+ *
+ * @property repositorio Repositorio para acceder a los datos de contactos.
+ * @property preferenciasManager Gestor de preferencias de la aplicación.
+ */
 class ContactosFavoritosViewModel(
     private val repositorio: ContactoTelefonoRepositorio,
     private val preferenciasManager: PreferenciasManager
 ) : ViewModel() {
-
-    private val TAG = ContactosFavoritosViewModel::class.java.simpleName
 
     // Estado interno: Lista completa de favoritos cargada
     private val _listaFavoritosOriginal = MutableStateFlow<List<ContactoTelefono>>(emptyList())
@@ -46,32 +49,32 @@ class ContactosFavoritosViewModel(
     }
 
     /**
-     * Se llama desde onResume del Fragmento para recargar la lista
-     * por si se añadieron favoritos nuevos en la otra pantalla.
+     * Carga la lista de favoritos desde el repositorio.
+     * Filtra los contactos obtenidos para mantener solo aquellos marcados como favoritos.
+     * Se debe llamar al iniciar o retomar la vista para asegurar datos frescos.
      */
     fun cargarFavoritos() {
         viewModelScope.launch {
             _estadoUi.value = Resultado.Cargando
 
-            // 1. Obtenemos TODOS los contactos (el repositorio ya marca esFavorito = true/false)
             when (val resultado = repositorio.obtenerContactosDelTelefono()) {
                 is Resultado.Exito -> {
-                    // 2. Filtramos SOLO los que tienen esFavorito = true
                     val soloFavoritos = resultado.datos.filter { it.esFavorito }
                     _listaFavoritosOriginal.value = soloFavoritos
-
-                    // Inicializamos la vista
                     _estadoUi.value = Resultado.Exito(soloFavoritos)
                 }
                 is Resultado.Error -> {
                     _estadoUi.value = resultado
-                    Log.e(TAG, "Error cargando favoritos: ${resultado.mensaje}")
                 }
                 else -> {}
             }
         }
     }
 
+    /**
+     * Configura la lógica de filtrado reactivo.
+     * Combina el término de búsqueda con la lista original de favoritos para emitir la lista filtrada.
+     */
     private fun configurarFiltrado() {
         viewModelScope.launch {
             _terminoBusqueda.combine(_listaFavoritosOriginal) { query, favoritos ->
@@ -104,14 +107,15 @@ class ContactosFavoritosViewModel(
     }
 }
 
-// Factory corregida
+/**
+ * Factory para instanciar [ContactosFavoritosViewModel] con sus dependencias.
+ */
 @Suppress("UNCHECKED_CAST")
 class ContactosFavoritosViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ContactosFavoritosViewModel::class.java)) {
 
             val database = AppDatabase.obtenerInstancia(application)
-            // Usamos la inyección correcta: Context + FavoritoDao
             val repositorio = ContactoTelefonoRepositorio(application.applicationContext, database.favoritoDao())
             val preferenciasManager = PreferenciasManager.getInstance(application.applicationContext)
 

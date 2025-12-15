@@ -31,14 +31,16 @@ import com.SamiDev.agendasencilla.util.Resultado
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+/**
+ * Fragmento que muestra el listado de contactos del dispositivo.
+ * Permite buscar, ver detalles, marcar favoritos y realizar llamadas.
+ */
 @Suppress("DEPRECATION")
 class listadocontactosFragment : Fragment() {
-
 
     private var _binding: FragmentListadocontactosBinding? = null
     private val binding get() = _binding!!
 
-    // Usamos la Factory actualizada
     private val viewModel: ListadocontactosViewModel by viewModels {
         ListadocontactosViewModelFactory(requireActivity().application)
     }
@@ -46,12 +48,10 @@ class listadocontactosFragment : Fragment() {
     private lateinit var contactoAdapter: ContactoAdapter
     private lateinit var lectorDeVoz: LectorDeVoz
 
-    // Lanzador para solicitar permisos
     private val solicitudPermisoLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { esConcedido: Boolean ->
         if (esConcedido) {
-            // Si el usuario acepta, cargamos los contactos
             viewModel.cargarContactosIniciales()
         } else {
             mostrarError("El permiso es necesario para ver los contactos.")
@@ -101,7 +101,6 @@ class listadocontactosFragment : Fragment() {
                 manejarClicEnContacto(contacto)
             },
             alHacerClicEnFavorito = { contacto, esFavorito ->
-                // Aquí llamamos al ViewModel
                 viewModel.actualizarEstadoFavorito(contacto, esFavorito)
             }
         )
@@ -113,18 +112,14 @@ class listadocontactosFragment : Fragment() {
     }
 
     private fun configurarObservadores() {
-        // Observamos el estado de la UI (Cargando, Éxito, Error)
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-
-                // Observar lista de contactos y estado
                 launch {
                     viewModel.estadoUi.collectLatest { resultado ->
                         manejarEstadoUi(resultado)
                     }
                 }
 
-                // Observar preferencia de lectura de voz
                 launch {
                     viewModel.lecturaActivada.collectLatest { activada ->
                         contactoAdapter.actualizarPreferenciaLectura(activada)
@@ -144,10 +139,6 @@ class listadocontactosFragment : Fragment() {
                 binding.progressBar.visibility = View.GONE
                 binding.rvContactos.visibility = View.VISIBLE
                 contactoAdapter.submitList(resultado.datos)
-
-                if (resultado.datos.isEmpty()) {
-                    // Opcional: Mostrar vista de "lista vacía"
-                }
             }
             is Resultado.Error -> {
                 binding.progressBar.visibility = View.GONE
@@ -160,7 +151,6 @@ class listadocontactosFragment : Fragment() {
         if (viewModel.lecturaActivada.value) {
             lectorDeVoz.leerEnVozAlta("${contacto.nombreCompleto}")
         }
-        // Aquí puedes navegar al detalle si lo deseas
     }
 
     private fun mostrarError(mensaje: String) {
@@ -170,14 +160,11 @@ class listadocontactosFragment : Fragment() {
     private fun configurarMenu() {
         val menuHost: MenuHost = requireActivity()
 
-        // Añadimos el MenuProvider asociado al ciclo de vida de la vista (viewLifecycleOwner)
         menuHost.addMenuProvider(object : MenuProvider {
 
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                // 1. Inflar el menú
                 menuInflater.inflate(R.menu.menu_contactos, menu)
 
-                // 2. Configurar el SearchView
                 val searchItem = menu.findItem(R.id.action_search)
                 val searchView = searchItem?.actionView as? SearchView
 
@@ -194,10 +181,8 @@ class listadocontactosFragment : Fragment() {
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                // 3. Manejar clics en opciones del menú
                 return when (menuItem.itemId) {
                     R.id.action_search -> {
-                        // El SearchView ya se maneja solo, pero retornamos true para indicar consumo
                         true
                     }
                     else -> {

@@ -1,12 +1,11 @@
 package com.SamiDev.agendasencilla.ui.configuracion
 
 import android.app.Application
-import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.SamiDev.agendasencilla.data.preferencias.OpcionTamanoFuente // Importar el enum
+import com.SamiDev.agendasencilla.data.preferencias.OpcionTamanoFuente
 import com.SamiDev.agendasencilla.data.preferencias.PreferenciasManager
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,10 +36,6 @@ class ConfiguracionViewModel(
     private val preferenciasManager: PreferenciasManager
 ) : ViewModel() {
 
-    companion object {
-        private const val TAG = "ConfiguracionViewModel"
-    }
-
     // --- Preferencias de Tema ---
     private val _opcionTemaSeleccionada: MutableStateFlow<OpcionTema>
     val opcionTemaSeleccionada: StateFlow<OpcionTema>
@@ -69,7 +64,6 @@ class ConfiguracionViewModel(
         // Inicialización para Lectura en Voz
         viewModelScope.launch {
             preferenciasManager.lecturaEnVozActivadaFlow.collect { activada ->
-                Log.d(TAG, "Nuevo valor de preferencia de voz recibido: $activada")
                 _preferenciaLecturaVozActiva.value = activada
             }
         }
@@ -87,6 +81,11 @@ class ConfiguracionViewModel(
         }
     }
 
+    /**
+     * Actualiza la opción de tema seleccionada y aplica el cambio inmediatamente.
+     *
+     * @param opcion La nueva opción de tema.
+     */
     fun actualizarOpcionTema(opcion: OpcionTema) {
         _opcionTemaSeleccionada.value = opcion
         when (opcion) {
@@ -124,9 +123,10 @@ class ConfiguracionViewModel(
 
     /**
      * Actualiza y guarda la preferencia del usuario para la lectura en voz alta.
+     *
+     * @param activada `true` si la lectura en voz alta debe estar activa.
      */
     fun actualizarPreferenciaLecturaEnVoz(activada: Boolean) {
-        Log.d(TAG, "ViewModel solicita actualizar preferencia de voz a: $activada")
         if (_preferenciaLecturaVozActiva.value != activada) {
             _preferenciaLecturaVozActiva.value = activada
             preferenciasManager.guardarPreferenciaLecturaEnVoz(activada)
@@ -138,7 +138,6 @@ class ConfiguracionViewModel(
 class ConfiguracionViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ConfiguracionViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
             val preferenciasManager = PreferenciasManager.getInstance(application.applicationContext)
             return ConfiguracionViewModel(application, preferenciasManager) as T
         }

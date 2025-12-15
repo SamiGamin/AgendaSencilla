@@ -7,7 +7,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.CallLog
 import android.provider.ContactsContract
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -29,7 +28,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import com.SamiDev.agendasencilla.R
 import com.SamiDev.agendasencilla.data.database.AppDatabase
 import com.SamiDev.agendasencilla.data.repository.ContactoTelefonoRepositorio
@@ -38,25 +36,27 @@ import com.SamiDev.agendasencilla.databinding.FragmentMarcarBinding
 import com.SamiDev.agendasencilla.util.PhoneNumberFormatter
 import com.SamiDev.agendasencilla.util.adapter.ContactoSugerenciaAdapter
 import com.SamiDev.agendasencilla.util.adapter.HistorialAdapter
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.LinearLayoutManager
 
+/**
+ * Fragmento que implementa el marcador telefónico (Dialer).
+ * Permite marcar números, ver historial de llamadas, buscar sugerencias de contactos y realizar llamadas.
+ */
 @Suppress("DEPRECATION")
 class MarcarFragment : Fragment() {
 
     private var _binding: FragmentMarcarBinding? = null
     private val binding get() = _binding!!
 
-    val REQUEST_CODE_LOG = 100
+    private val REQUEST_CODE_LOG = 100
 
     private val viewModel: MarcarViewModel by viewModels {
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 val context = requireContext().applicationContext
                 val database = AppDatabase.obtenerInstancia(context)
-
-                // Repositorio 1: Contactos (con soporte Favoritos)
                 val repoContactos = ContactoTelefonoRepositorio(context, database.favoritoDao())
-
-                // Repositorio 2: Llamadas
                 val repoLlamadas = LlamadasRepositorio(context)
 
                 @Suppress("UNCHECKED_CAST")
@@ -75,6 +75,7 @@ class MarcarFragment : Fragment() {
         _binding = FragmentMarcarBinding.inflate(inflater, container, false)
         return binding.root
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         PhoneNumberFormatter.formatar(binding.etNumero)
@@ -95,14 +96,17 @@ class MarcarFragment : Fragment() {
         }
     }
 
+    /**
+     * Configura el menú de opciones para filtrar historial de llamadas.
+     */
     private fun setupMenu() {
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                // Esto BORRA los iconos que vengan del MainActivity (lupa, configuración, etc.)
                 menu.clear()
                 menuInflater.inflate(R.menu.menu_historial_llamadas, menu)
             }
+
             @SuppressLint("RestrictedApi")
             override fun onPrepareMenu(menu: Menu) {
                 super.onPrepareMenu(menu)
@@ -114,23 +118,17 @@ class MarcarFragment : Fragment() {
                     val icon = item.icon
 
                     if (icon != null) {
-                        // Es importante usar mutate() para no afectar el icono en otras partes de la app
                         val wrappedDrawable = DrawableCompat.wrap(icon).mutate()
-
-                        // Lógica de colores según el ID del ítem
                         val color = when (item.itemId) {
                             R.id.llamada_perdida, R.id.eliminar_registro -> ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark)
                             R.id.llamada_entrante -> ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
                             R.id.llamada_saliente -> ContextCompat.getColor(requireContext(), android.R.color.holo_blue_dark)
-                            else -> ContextCompat.getColor(requireContext(), R.color.md_theme_scrim) // Color por defecto
+                            else -> ContextCompat.getColor(requireContext(), R.color.md_theme_scrim)
                         }
-
                         DrawableCompat.setTint(wrappedDrawable, color)
                         item.icon = wrappedDrawable
                     }
-
                 }
-
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
@@ -139,47 +137,42 @@ class MarcarFragment : Fragment() {
                     requestPermissions(arrayOf(android.Manifest.permission.READ_CALL_LOG), REQUEST_CODE_LOG)
                     return false
                 }
-               return when (menuItem.itemId) {
-                   R.id.llamada_saliente -> {
-                       viewModel.cargarHistorial(CallLog.Calls.OUTGOING_TYPE)
-                       viewModel.activarModoHistorial()
-                       true
-                   }
-                   R.id.llamada_entrante -> {
-                       viewModel.cargarHistorial(CallLog.Calls.INCOMING_TYPE)
-                       viewModel.activarModoHistorial()
-                       true
-                   }
-                   R.id.llamada_perdida -> {
-                       viewModel.cargarHistorial(CallLog.Calls.MISSED_TYPE)
-                       viewModel.activarModoHistorial()
-                       true
-                   }
-                   R.id.eliminar_registro -> {
-
-                       true
-                   }
-                   else ->{
-                       viewModel.cargarHistorial(null)
-                       false
-                   }
-               }
+                return when (menuItem.itemId) {
+                    R.id.llamada_saliente -> {
+                        viewModel.cargarHistorial(CallLog.Calls.OUTGOING_TYPE)
+                        viewModel.activarModoHistorial()
+                        true
+                    }
+                    R.id.llamada_entrante -> {
+                        viewModel.cargarHistorial(CallLog.Calls.INCOMING_TYPE)
+                        viewModel.activarModoHistorial()
+                        true
+                    }
+                    R.id.llamada_perdida -> {
+                        viewModel.cargarHistorial(CallLog.Calls.MISSED_TYPE)
+                        viewModel.activarModoHistorial()
+                        true
+                    }
+                    R.id.eliminar_registro -> {
+                        true
+                    }
+                    else ->{
+                        viewModel.cargarHistorial(null)
+                        false
+                    }
+                }
             }
-
-
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-
     }
 
     private fun setupRecyclerView() {
         adapterSugerencias = ContactoSugerenciaAdapter { numero -> llamar(numero) }
         adapterHistorial = HistorialAdapter { numero -> llamar(numero) }
         binding.rvSugerencias.apply {
-            // ¡ESTA LÍNEA ES OBLIGATORIA! Sin ella, la lista es invisible
-            layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
+            layoutManager = LinearLayoutManager(context)
             binding.rvSugerencias.adapter = adapterHistorial
-            addOnScrollListener(object : androidx.recyclerview.widget.RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: androidx.recyclerview.widget.RecyclerView, dx: Int, dy: Int) {
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     super.onScrolled(recyclerView, dx, dy)
                     if (dy > 10) {
                         if (viewModel.modoTeclado.value == true) {
@@ -189,11 +182,9 @@ class MarcarFragment : Fragment() {
                 }
             })
         }
-        Log.d("MARCADOR_DEBUG", "RecyclerView configurado correctamente")
     }
 
     private fun observarViewModel() {
-        // NUEVO: Observar si mostramos teclado o historial
         viewModel.modoTeclado.observe(viewLifecycleOwner) { mostrarTeclado ->
             binding.gridTeclas.visibility = if (mostrarTeclado) View.VISIBLE else View.GONE
             binding.linearLayout.visibility = if (mostrarTeclado) View.VISIBLE else View.GONE
@@ -207,7 +198,6 @@ class MarcarFragment : Fragment() {
                     params.verticalWeight = 0f
                 }
                 else{
-
                     params.height = 0
                     params.bottomToTop = ConstraintLayout.LayoutParams.UNSET
                     params.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
@@ -217,21 +207,8 @@ class MarcarFragment : Fragment() {
                 binding.rvSugerencias.requestLayout()
 
             }
-            else if (params is android.widget.LinearLayout.LayoutParams) {
-                // FALLBACK: Por si cambiaras el XML a LinearLayout en el futuro
-                if (mostrarTeclado) {
-                    params.height = 0
-                    params.weight = 1f
-                } else {
-                    params.height = ViewGroup.LayoutParams.MATCH_PARENT
-                    params.weight = 0f
-                }
-                binding.rvSugerencias.layoutParams = params
-                binding.rvSugerencias.requestLayout()
-            }
         }
 
-        // Esto actualiza el EditText
         viewModel.numeroActual.observe(viewLifecycleOwner) { numero ->
             binding.etNumero.setText(numero)
             binding.etNumero.setSelection(numero.length)
@@ -244,49 +221,38 @@ class MarcarFragment : Fragment() {
                 binding.btnAgregar.visibility = View.GONE
             }
             if (numero.isEmpty()) {
-                // Si borra el número -> Mostrar Historial
                 binding.rvSugerencias.adapter = adapterHistorial
-                viewModel.cargarHistorial() // Recargar historial fresco
+                viewModel.cargarHistorial()
             } else {
-                // Si hay números -> Mostrar Sugerencias
                 binding.rvSugerencias.adapter = adapterSugerencias
             }
         }
-// B. Observar datos del HISTORIAL
+
         viewModel.historial.observe(viewLifecycleOwner) { listaLlamadas ->
-            // Solo actualizamos si el adaptador actual es el de historial
             if (binding.rvSugerencias.adapter == adapterHistorial) {
                 adapterHistorial.submitList(listaLlamadas)
             }
         }
 
         viewModel.sugerencias.observe(viewLifecycleOwner) { lista ->
-            Log.d("MARCADOR_DEBUG", "Sugerencias recibidas: ${lista.size} contactos")
-            lista.forEach { contacto ->
-                Log.d("MARCADOR_DEBUG", "→ ${contacto.nombreCompleto} | ${contacto.numeroTelefono}")
-            }
             adapterSugerencias.submitList(lista)
-//            binding.rvSugerencias.visibility = if (lista.isEmpty()) View.GONE else View.VISIBLE
             binding.rvSugerencias.visibility = View.VISIBLE
         }
 
-        // Llamar desde sugerencia o FAB
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.eventoLlamar.collect { numero ->
                 llamar(numero)
             }
         }
     }
+
     private fun setupManejadorAtras() {
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (viewModel.modoTeclado.value == false) {
-                    // Si estamos viendo historial, volvemos al teclado
                     viewModel.activarModoMarcador()
-                    // Opcional: Restaurar la lista por defecto
-                    binding.rvSugerencias.adapter = adapterHistorial // o adapterSugerencias
+                    binding.rvSugerencias.adapter = adapterHistorial
                 } else {
-                    // Si ya estamos en el teclado, el comportamiento normal (salir o ir atrás)
                     isEnabled = false
                     requireActivity().onBackPressedDispatcher.onBackPressed()
                 }
@@ -299,13 +265,10 @@ class MarcarFragment : Fragment() {
         binding.gridTeclas.children.forEach { btn ->
             if (btn is com.google.android.material.button.MaterialButton) {
                 btn.setOnClickListener {
-                    val digito = btn.text.toString()
                     viewModel.agregarDigito(btn.text.toString())
-                    Log.d("MARCADOR_DEBUG", "Tecla pulsada: $digito → número actual: ${viewModel.numeroActual.value}")
                 }
             }
         }
-
     }
 
     private fun configurarBotonBorrar() {
@@ -327,16 +290,11 @@ class MarcarFragment : Fragment() {
 
     private fun setupBtnAgregar() {
         binding.btnAgregar.setOnClickListener {
-            // 1. Obtenemos el número escrito
             val numeroAguardar = viewModel.numeroActual.value.orEmpty()
-
             if (numeroAguardar.isNotEmpty()) {
                 try {
-                    // 2. Creamos el Intent nativo de Insertar
                     val intent = Intent(Intent.ACTION_INSERT).apply {
                         type = ContactsContract.Contacts.CONTENT_TYPE
-
-                        // 3. ¡MAGIA! Le pasamos el número a la app de contactos
                         putExtra(ContactsContract.Intents.Insert.PHONE, numeroAguardar)
                     }
                     startActivity(intent)

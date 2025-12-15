@@ -1,6 +1,5 @@
 package com.SamiDev.agendasencilla.ui.gestion.directorio
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,12 +10,18 @@ import com.SamiDev.agendasencilla.data.repository.ContactoTelefonoRepositorio
 import com.SamiDev.agendasencilla.data.repository.LlamadasRepositorio
 import com.SamiDev.agendasencilla.util.Resultado
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+
+/**
+ * ViewModel para el fragmento de Marcador (Dialer).
+ * Gestiona la lógica de marcación, historial de llamadas y búsqueda de contactos.
+ *
+ * @property repoContactos Repositorio para acceder a los contactos.
+ * @property repoLlamadas Repositorio para acceder al historial de llamadas.
+ */
 class MarcarViewModel(
     private val repoContactos: ContactoTelefonoRepositorio,
     private val repoLlamadas: LlamadasRepositorio
@@ -46,13 +51,9 @@ class MarcarViewModel(
     private var listaCompletaContactos: List<ContactoTelefono> = emptyList()
 
     init {
-        // Cargar contactos en memoria al iniciar para búsqueda rápida
         cargarContactosEnMemoria()
-
-        // Cargar historial inicial
         cargarHistorial()
 
-        // Observar cambios en el número para filtrar
         _numeroActual.observeForever { query ->
             filtrarSugerencias(query)
         }
@@ -67,6 +68,9 @@ class MarcarViewModel(
         }
     }
 
+    /**
+     * Carga el historial de llamadas, opcionalmente filtrado por tipo.
+     */
     fun cargarHistorial(filtroTipo: Int? = null) {
         viewModelScope.launch {
             val logs = repoLlamadas.obtenerHistorialLlamadas(filtroTipo)
@@ -83,14 +87,12 @@ class MarcarViewModel(
         viewModelScope.launch(Dispatchers.Default) {
             val queryLimpia = query.replace(" ", "")
 
-            // Filtramos la lista en memoria
             val filtrados = listaCompletaContactos.filter { contacto ->
-                // Coincidencia por nombre O por número
                 contacto.nombreCompleto.contains(query, ignoreCase = true) ||
                         contacto.numeroTelefono.replace(" ", "").contains(queryLimpia)
             }
 
-            _sugerencias.postValue(filtrados.take(5)) // Top 5 resultados
+            _sugerencias.postValue(filtrados.take(5))
         }
     }
 
@@ -122,7 +124,7 @@ class MarcarViewModel(
 
     fun activarModoMarcador() {
         _modoTeclado.value = true
-        cargarHistorial(null) // Restaurar historial completo
+        cargarHistorial(null)
     }
 
     // --- ACCIONES ---

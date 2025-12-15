@@ -2,7 +2,6 @@ package com.SamiDev.agendasencilla.data.repository
 
 import android.content.Context
 import android.provider.ContactsContract
-import android.util.Log
 import com.SamiDev.agendasencilla.data.ContactoTelefono
 import com.SamiDev.agendasencilla.data.database.FavoritoDao
 import com.SamiDev.agendasencilla.data.database.FavoritoEntity
@@ -10,20 +9,30 @@ import com.SamiDev.agendasencilla.util.Resultado
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/**
+ * Repositorio encargado de gestionar los contactos.
+ * Combina datos de los contactos nativos del dispositivo y la base de datos local de favoritos.
+ *
+ * @property context Contexto de la aplicación.
+ * @property favoritoDao DAO para acceder a los favoritos locales.
+ */
 class ContactoTelefonoRepositorio(
     private val context: Context,
     private val favoritoDao: FavoritoDao
-)  {
-    // Función suspendida para no bloquear el hilo principal
-    private val TAG = ContactoTelefonoRepositorio::class.java.simpleName
+) {
 
+    /**
+     * Obtiene la lista completa de contactos del dispositivo, filtrando duplicados y números inválidos.
+     * También verifica si cada contacto es "favorito" consultando la base de datos local.
+     *
+     * @return [Resultado] con la lista de [ContactoTelefono] o un error.
+     */
     suspend fun obtenerContactosDelTelefono(): Resultado<List<ContactoTelefono>> {
         return withContext(Dispatchers.IO) {
             val listaFinal = mutableListOf<ContactoTelefono>()
             val controlDuplicados = mutableSetOf<String>()
 
             try {
-
                 val idsFavoritos = favoritoDao.obtenerIdsFavoritos().toSet()
                 val contentResolver = context.contentResolver
                 val proyeccion = arrayOf(
@@ -76,8 +85,6 @@ class ContactoTelefonoRepositorio(
                             ContactoTelefono(
                                 id = id,
                                 nombreCompleto = nombre,
-                                // Guardamos el número limpio o el original según prefieras.
-                                // Aquí guardo el normalizado para que se vea limpio en la UI.
                                 numeroTelefono = numeroNormalizado,
                                 fotoUri = foto,
                                 esFavorito = esFavoritoLocal
@@ -87,38 +94,48 @@ class ContactoTelefonoRepositorio(
                 }
 
                 if (listaFinal.isEmpty()) {
-                    Log.w(TAG, "La consulta no devolvió contactos o todos fueron filtrados.")
+                    // Considerar registrar un evento o alerta silenciosa si es necesario
                 }
 
                 Resultado.Exito(listaFinal)
 
             } catch (e: Exception) {
-                Log.e(TAG, "Error consultando contactos", e)
                 Resultado.Error("No se pudieron cargar los contactos.", e)
             }
         }
     }
+
+    /**
+     * Marca un contacto como favorito guardándolo en la base de datos local.
+     */
     suspend fun marcarComoFavorito(idContacto: String) {
         withContext(Dispatchers.IO) {
             favoritoDao.agregarFavorito(FavoritoEntity(idContacto))
         }
     }
 
+    /**
+     * Desmarca un contacto como favorito eliminándolo de la base de datos local.
+     */
     suspend fun desmarcarFavorito(idContacto: String) {
         withContext(Dispatchers.IO) {
             favoritoDao.eliminarFavorito(idContacto)
         }
     }
+
+    /**
+     * Busca un contacto específico por su ID en los contactos del dispositivo.
+     * Recupera nombre, número y foto, y verifica si es favorito.
+     *
+     * @param idContacto ID del contacto a buscar.
+     * @return [ContactoTelefono] si se encuentra, `null` en caso contrario.
+     */
     suspend fun obtenerContactoPorId(idContacto: String): ContactoTelefono? {
         return withContext(Dispatchers.IO) {
             var contactoEncontrado: ContactoTelefono? = null
 
-            // 1. Verificar si es favorito localmente
-//            val esFavorito = favoritoDao.esFavorito(idContacto) // Necesitarás agregar esta fun al DAO o usar obtenerIdsFavoritos().contains(id)
-            // Forma rápida si no quieres modificar el DAO ahora:
             val esFavorito = favoritoDao.obtenerIdsFavoritos().contains(idContacto)
 
-            // 2. Consultar al sistema
             val contentResolver = context.contentResolver
             val uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
             val selection = "${ContactsContract.CommonDataKinds.Phone.CONTACT_ID} = ?"
@@ -136,7 +153,6 @@ class ContactoTelefonoRepositorio(
                     val numero = c.getString(indexNumero) ?: ""
                     val foto = c.getString(indexFoto)
 
-                    // Limpieza básica del número para mostrar
                     val numeroLimpio = numero.replace("+57", "").trim()
 
                     contactoEncontrado = ContactoTelefono(
@@ -144,7 +160,7 @@ class ContactoTelefonoRepositorio(
                         nombreCompleto = nombre,
                         numeroTelefono = numeroLimpio,
                         fotoUri = foto,
-                        esFavorito = esFavorito // Usamos el valor booleano real
+                        esFavorito = esFavorito
                     )
                 }
             }

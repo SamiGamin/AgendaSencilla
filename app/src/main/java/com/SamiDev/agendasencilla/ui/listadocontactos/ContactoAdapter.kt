@@ -14,8 +14,13 @@ import com.SamiDev.agendasencilla.util.LectorDeVoz
 import com.SamiDev.agendasencilla.util.PhoneNumberFormatter
 import com.bumptech.glide.Glide
 
-
-
+/**
+ * Adaptador para mostrar la lista de contactos.
+ * Maneja la visualización de cada contacto, incluyendo foto, nombre, teléfono y estado de favorito.
+ *
+ * @property alHacerClicEnItem Callback al hacer clic en un contacto.
+ * @property alHacerClicEnFavorito Callback al hacer clic en el botón de favorito.
+ */
 class ContactoAdapter(
     private val alHacerClicEnItem: (ContactoTelefono) -> Unit,
     private val alHacerClicEnFavorito: (ContactoTelefono, Boolean) -> Unit
@@ -23,10 +28,11 @@ class ContactoAdapter(
 
     private var lecturaVozActivada: Boolean = false
 
-    // Método para actualizar la configuración de voz desde el Fragment
+    /**
+     * Actualiza la preferencia de lectura en voz.
+     */
     fun actualizarPreferenciaLectura(activada: Boolean) {
         lecturaVozActivada = activada
-        // Notificamos cambios visuales si fueran necesarios (opcional)
         notifyDataSetChanged()
     }
 
@@ -45,24 +51,21 @@ class ContactoAdapter(
             binding.tvNombre.text = contacto.nombreCompleto
             binding.tvTelefono.text = PhoneNumberFormatter.formatearParaLectura(contacto.numeroTelefono)
 
-            // Estilos visuales del botón llamar (manteniendo tu diseño)
             binding.btnLlamar.setIconTintResource(R.color.md_theme_onPrimaryFixed)
             binding.btnLlamar.backgroundTintList = ContextCompat.getColorStateList(itemView.context, R.color.md_theme_primary)
 
-            // Carga de imagen con Glide
             if (contacto.fotoUri != null) {
                 Glide.with(binding.root.context)
                     .load(contacto.fotoUri)
                     .circleCrop()
-                    .placeholder(R.drawable.ic_launcher_foreground) // Asegúrate de tener un placeholder
+                    .placeholder(R.drawable.ic_launcher_foreground)
                     .error(R.drawable.ic_launcher_foreground)
-                    .into(binding.ivFotoPerfil) // Asume que tienes un ImageView con este id
+                    .into(binding.ivFotoPerfil)
             } else {
-                // Imagen por defecto si no tiene foto
                 binding.ivFotoPerfil.setImageResource(R.drawable.ic_launcher_foreground)
             }
-            val iconoFavorito = R.drawable.ic_favorite // Asegúrate de tener este icono (corazón rojo/lleno)
-            val iconoNoFavorito = R.drawable.ic_favorito_borde // Asegúrate de tener este icono (corazón vacío)
+            val iconoFavorito = R.drawable.ic_favorite
+            val iconoNoFavorito = R.drawable.ic_favorito_borde
 
             if (contacto.esFavorito) {
                 binding.btnFavorito.setIconResource(iconoFavorito)
@@ -77,11 +80,9 @@ class ContactoAdapter(
                 })
             }
             binding.btnFavorito.setOnClickListener {
-                // Invertimos el valor actual
                 val nuevoEstado = !contacto.esFavorito
                 contacto.esFavorito = nuevoEstado
 
-                // Actualizamos el icono visualmente al instante
                 if (nuevoEstado) {
                     binding.btnFavorito.setIconResource(iconoFavorito)
                     binding.btnFavorito.backgroundTintList = ContextCompat.getColorStateList(itemView.context, R.color.md_theme_onBackground_mediumContrast)
@@ -90,7 +91,6 @@ class ContactoAdapter(
                     binding.btnFavorito.backgroundTintList = ContextCompat.getColorStateList(itemView.context, android.R.color.transparent)
                 }
 
-                // Avisamos al fragmento
                 alHacerClicEnFavorito(contacto, nuevoEstado)
             }
 

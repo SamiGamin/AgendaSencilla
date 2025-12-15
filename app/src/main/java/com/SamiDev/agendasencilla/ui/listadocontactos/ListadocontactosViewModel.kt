@@ -1,7 +1,6 @@
 package com.SamiDev.agendasencilla.ui.listadocontactos
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -11,7 +10,6 @@ import com.SamiDev.agendasencilla.data.preferencias.PreferenciasManager
 import com.SamiDev.agendasencilla.data.repository.ContactoTelefonoRepositorio
 import com.SamiDev.agendasencilla.util.Resultado
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,13 +17,17 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
+/**
+ * ViewModel para el fragmento de listado de contactos.
+ * Gestiona la carga, filtrado y actualización de favoritos de los contactos.
+ *
+ * @property repositorio Repositorio de contactos.
+ * @property preferenciasManager Gestor de preferencias.
+ */
 class ListadocontactosViewModel(
     private val repositorio: ContactoTelefonoRepositorio,
     private val preferenciasManager: PreferenciasManager
 ) : ViewModel() {
-
-
-    private val TAG = ListadocontactosViewModel::class.java.simpleName
 
     // Estado interno de la lista completa cargada del teléfono
     private val _listaOriginal = MutableStateFlow<List<ContactoTelefono>>(emptyList())
@@ -54,16 +56,13 @@ class ListadocontactosViewModel(
     fun cargarContactosIniciales() {
         viewModelScope.launch {
             _estadoUi.value = Resultado.Cargando
-
             when (val resultado = repositorio.obtenerContactosDelTelefono()) {
                 is Resultado.Exito -> {
                     _listaOriginal.value = resultado.datos
-                    // Inicialmente mostramos la lista completa
                     _estadoUi.value = Resultado.Exito(resultado.datos)
                 }
                 is Resultado.Error -> {
                     _estadoUi.value = resultado
-                    Log.e(TAG, "Error cargando contactos: ${resultado.mensaje}")
                 }
                 else -> {}
             }
@@ -85,7 +84,6 @@ class ListadocontactosViewModel(
                     }
                 }
             }.collectLatest { listaFiltrada ->
-                // Solo actualizamos si ya tenemos datos cargados exitosamente
                 if (_estadoUi.value is Resultado.Exito) {
                     _estadoUi.value = Resultado.Exito(listaFiltrada)
                 }
@@ -96,7 +94,6 @@ class ListadocontactosViewModel(
     private fun observarPreferencias() {
         viewModelScope.launch {
             preferenciasManager.lecturaEnVozActivadaFlow.collectLatest { activada ->
-                Log.d(TAG, "Preferencia lectura voz: $activada")
                 _lecturaActivada.value = activada
             }
         }
@@ -105,34 +102,34 @@ class ListadocontactosViewModel(
     fun actualizarTerminoBusqueda(query: String) {
         _terminoBusqueda.value = query
     }
+
+    /**
+     * Actualiza el estado de favorito de un contacto.
+     *
+     * @param contacto El contacto a actualizar.
+     * @param esFavorito El nuevo estado de favorito.
+     */
     fun actualizarEstadoFavorito(contacto: ContactoTelefono, esFavorito: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             if (esFavorito) {
                 repositorio.marcarComoFavorito(contacto.id)
-                Log.d("ViewModel", "Guardando favorito: ${contacto.nombreCompleto}")
             } else {
                 repositorio.desmarcarFavorito(contacto.id)
-                Log.d("ViewModel", "Removiendo favorito: ${contacto.nombreCompleto}")
             }
-
-            // Opcional: Actualizar la lista _listaOriginal en memoria para reflejar el cambio
-            // sin tener que recargar todo del teléfono.
         }
     }
 }
 
-
-// Factory actualizada para inyectar el nuevo Repositorio
+/**
+ * Factory para instanciar [ListadocontactosViewModel].
+ */
 @Suppress("UNCHECKED_CAST")
 class ListadocontactosViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ListadocontactosViewModel::class.java)) {
-
             val database = AppDatabase.obtenerInstancia(application)
-            // Creamos el repositorio pasando el contexto de la aplicación
             val repositorio = ContactoTelefonoRepositorio(application.applicationContext , database.favoritoDao())
             val preferenciasManager = PreferenciasManager.getInstance(application.applicationContext)
-
             return ListadocontactosViewModel(repositorio, preferenciasManager) as T
         }
         throw IllegalArgumentException("Clase ViewModel desconocida: " + modelClass.name)

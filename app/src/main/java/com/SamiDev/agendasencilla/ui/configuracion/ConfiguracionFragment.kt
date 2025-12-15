@@ -1,7 +1,6 @@
 package com.SamiDev.agendasencilla.ui.configuracion
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -15,16 +14,16 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.SamiDev.agendasencilla.R // Necesario para los IDs de los botones
-import com.SamiDev.agendasencilla.data.preferencias.OpcionTamanoFuente // Importar enum
+import com.SamiDev.agendasencilla.R
+import com.SamiDev.agendasencilla.data.preferencias.OpcionTamanoFuente
 import com.SamiDev.agendasencilla.databinding.FragmentConfiguracionBinding
 import kotlinx.coroutines.launch
 
+/**
+ * Fragmento de configuración.
+ * Permite al usuario personalizar el tema, tamaño de fuente y opciones de accesibilidad como la lectura de voz.
+ */
 class ConfiguracionFragment : Fragment() {
-
-    companion object {
-        private const val TAG = "ConfiguracionFragment"
-    }
 
     private var _binding: FragmentConfiguracionBinding? = null
     private val binding get() = _binding!!
@@ -45,7 +44,7 @@ class ConfiguracionFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         observarOpcionTemaSeleccionada()
         observarOpcionTamanoFuenteSeleccionada()
-        observarPreferenciaLecturaVoz() // Observar el estado de la preferencia de lectura
+        observarPreferenciaLecturaVoz()
         observarEventoRecrearActividad()
         configurarListeners()
         setupMenu()
@@ -63,18 +62,14 @@ class ConfiguracionFragment : Fragment() {
             }
 
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-
     }
 
     /**
-     * Observa la opción de tema seleccionada desde el ViewModel
-     * y actualiza la UI (el MaterialButtonToggleGroup) correspondientemente.
+     * Observa la opción de tema seleccionada y actualiza la UI.
      */
     private fun observarOpcionTemaSeleccionada() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-
-                // Observar Tema
                 launch {
                     viewModel.opcionTemaSeleccionada.collect { opcion ->
                         val idSeleccionado = when (opcion) {
@@ -87,53 +82,24 @@ class ConfiguracionFragment : Fragment() {
                         }
                     }
                 }
-
-                // Observar Tamaño Fuente
-                launch {
-                    viewModel.opcionTamanoFuenteSeleccionada.collect { opcion ->
-                        val idSeleccionado = when (opcion) {
-                            OpcionTamanoFuente.NORMAL -> R.id.btn_tamano_normal
-                            OpcionTamanoFuente.GRANDE -> R.id.btn_tamano_grande
-                            OpcionTamanoFuente.MAS_GRANDE -> R.id.btn_tamano_mas_grande
-                        }
-                        // Evita re-checkear si ya está marcado visualmente
-                        if (binding.toggleGroupTamanoFuente.checkedButtonId != idSeleccionado) {
-                            binding.toggleGroupTamanoFuente.check(idSeleccionado)
-                        }
-                    }
-                }
-
-                // Observar Lectura Voz
-                launch {
-                    viewModel.preferenciaLecturaVozActiva.collect { activada ->
-                        if (binding.switchLecturaEnVoz.isChecked != activada) {
-                            binding.switchLecturaEnVoz.isChecked = activada
-                        }
-                    }
-                }
-
-                // Observar Recreación
-                launch {
-                    viewModel.eventoRecrearActividad.collect {
-                        activity?.recreate()
-                    }
-                }
             }
         }
     }
 
     /**
-     * Observa la opción de tamaño de fuente seleccionada desde el ViewModel
-     * y actualiza la UI (el MaterialButtonToggleGroup) correspondientemente.
+     * Observa la opción de tamaño de fuente seleccionada y actualiza la UI.
      */
     private fun observarOpcionTamanoFuenteSeleccionada() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.opcionTamanoFuenteSeleccionada.collect { opcion ->
-                    when (opcion) {
-                        OpcionTamanoFuente.NORMAL -> binding.toggleGroupTamanoFuente.check(R.id.btn_tamano_normal)
-                        OpcionTamanoFuente.GRANDE -> binding.toggleGroupTamanoFuente.check(R.id.btn_tamano_grande)
-                        OpcionTamanoFuente.MAS_GRANDE -> binding.toggleGroupTamanoFuente.check(R.id.btn_tamano_mas_grande)
+                    val idSeleccionado = when (opcion) {
+                        OpcionTamanoFuente.NORMAL -> R.id.btn_tamano_normal
+                        OpcionTamanoFuente.GRANDE -> R.id.btn_tamano_grande
+                        OpcionTamanoFuente.MAS_GRANDE -> R.id.btn_tamano_mas_grande
+                    }
+                    if (binding.toggleGroupTamanoFuente.checkedButtonId != idSeleccionado) {
+                        binding.toggleGroupTamanoFuente.check(idSeleccionado)
                     }
                 }
             }
@@ -141,15 +107,12 @@ class ConfiguracionFragment : Fragment() {
     }
 
     /**
-     * Observa el estado de la preferencia de lectura en voz desde el ViewModel
-     * y actualiza la UI (el SwitchMaterial) para que refleje el valor actual.
+     * Observa el estado de la preferencia de lectura en voz y actualiza el Switch.
      */
     private fun observarPreferenciaLecturaVoz() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.preferenciaLecturaVozActiva.collect { activada ->
-                    Log.d(TAG, "UI observing new voice preference state: $activada")
-                    // Asegurarse de no entrar en un bucle si el listener también actualiza el ViewModel
                     if (binding.switchLecturaEnVoz.isChecked != activada) {
                         binding.switchLecturaEnVoz.isChecked = activada
                     }
@@ -159,8 +122,7 @@ class ConfiguracionFragment : Fragment() {
     }
 
     /**
-     * Observa el evento para recrear la actividad desde el ViewModel.
-     * Cuando se emite un evento, se llama a activity?.recreate().
+     * Observa el evento para recrear la actividad cuando cambian configuraciones críticas.
      */
     private fun observarEventoRecrearActividad() {
         viewLifecycleOwner.lifecycleScope.launch {
@@ -173,10 +135,9 @@ class ConfiguracionFragment : Fragment() {
     }
 
     /**
-     * Configura los listeners para los elementos interactivos de la UI.
+     * Configura los listeners para los botones y switches de la interfaz.
      */
     private fun configurarListeners() {
-        // Listener para el grupo de selección de tema
         binding.toggleGroupTema.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 val nuevaOpcion = when (checkedId) {
@@ -193,7 +154,6 @@ class ConfiguracionFragment : Fragment() {
             }
         }
 
-        // Listener para el grupo de selección de tamaño de fuente
         binding.toggleGroupTamanoFuente.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 val nuevaOpcion = when (checkedId) {
@@ -207,21 +167,16 @@ class ConfiguracionFragment : Fragment() {
                         viewModel.actualizarOpcionTamanoFuente(it)
                     }
                 }
-                binding.switchLecturaEnVoz.setOnCheckedChangeListener { _, isChecked ->
-                    viewModel.actualizarPreferenciaLecturaEnVoz(isChecked)
-                }
             }
         }
 
-        // Listener para el Switch de lectura en voz
         binding.switchLecturaEnVoz.setOnCheckedChangeListener { _, isChecked ->
-            Log.d(TAG, "Switch onCheckedChanged listener fired. New state: $isChecked")
             viewModel.actualizarPreferenciaLecturaEnVoz(isChecked)
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null // Limpiar la referencia al binding para evitar memory leaks.
+        _binding = null
     }
 }

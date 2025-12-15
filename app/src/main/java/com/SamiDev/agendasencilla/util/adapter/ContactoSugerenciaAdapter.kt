@@ -10,6 +10,12 @@ import com.SamiDev.agendasencilla.data.ContactoTelefono
 import com.SamiDev.agendasencilla.databinding.ItemNumeroMarcarBinding
 import com.SamiDev.agendasencilla.util.PhoneNumberFormatter
 import com.bumptech.glide.Glide
+
+/**
+ * Adaptador para mostrar sugerencias de contactos en el marcador (Dialer).
+ *
+ * @property onLlamarClick Callback que se invoca al intentar llamar a un contacto.
+ */
 class ContactoSugerenciaAdapter(
     private val onLlamarClick: (String) -> Unit
 ) : ListAdapter<ContactoTelefono, ContactoSugerenciaAdapter.VH>(DiffCallback) {
@@ -30,10 +36,8 @@ class ContactoSugerenciaAdapter(
 
         fun bind(contacto: ContactoTelefono) {
             binding.tvNombre.text = contacto.nombreCompleto
-            // Usamos tu formatter para que se vea bonito (ej: 300 123 4567)
             binding.tvTelefono.text = PhoneNumberFormatter.formatearParaLectura(contacto.numeroTelefono)
 
-            // Carga de foto con Glide
             if (contacto.fotoUri != null) {
                 Glide.with(binding.ivFotoContacto)
                     .load(contacto.fotoUri)
@@ -45,12 +49,10 @@ class ContactoSugerenciaAdapter(
                 binding.ivFotoContacto.setImageResource(R.drawable.ic_perm_identity)
             }
 
-            // Click en el botón verde de llamar
             binding.btnLlamar.setOnClickListener {
                 onLlamarClick(contacto.numeroTelefono)
             }
 
-            // Opcional: Si tocan toda la fila, también rellena el número o llama
             itemView.setOnClickListener {
                 onLlamarClick(contacto.numeroTelefono)
             }

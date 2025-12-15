@@ -13,22 +13,24 @@ import com.SamiDev.agendasencilla.data.database.LlamadaLog
 import com.SamiDev.agendasencilla.databinding.ItemHistorialBinding
 import com.SamiDev.agendasencilla.util.PhoneNumberFormatter
 
-class HistorialAdapter (private val onClick: (String) -> Unit
+/**
+ * Adaptador para mostrar el historial de llamadas.
+ * Permite visualizar el nombre/número, fecha y tipo de llamada (entrante, saliente, perdida).
+ *
+ * @property onClick Callback al hacer clic en un item o botón de llamada.
+ */
+class HistorialAdapter(
+    private val onClick: (String) -> Unit
 ) : ListAdapter<LlamadaLog, HistorialAdapter.ViewHolder>(DiffCallback) {
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val binding = ItemHistorialBinding.bind(view)
 
         fun bind(item: LlamadaLog) {
-            // Mostrar nombre si existe, sino el número
             binding.txtNombre.text = item.nombre
             binding.txtTelefono.text = PhoneNumberFormatter.formatearParaLectura(item.numero)
+            binding.txtFecha.text = "${item.duracion}"
 
-
-            // Formatear fecha (puedes usar SimpleDateFormat aquí o en el repo)
-            binding.txtFecha.text = "${item.duracion}" // Aquí puedes concatenar la fecha
-
-            // Lógica de iconos y colores
             val (icono, color) = when (item.tipo) {
                 CallLog.Calls.INCOMING_TYPE -> Pair(R.drawable.call_received, Color.GREEN)
                 CallLog.Calls.OUTGOING_TYPE -> Pair(R.drawable.call_made, Color.BLUE)
@@ -38,7 +40,6 @@ class HistorialAdapter (private val onClick: (String) -> Unit
             binding.imgTipo.setImageResource(icono)
             binding.imgTipo.setColorFilter(color)
 
-            // Click en todo el ítem o en el botón llamar
             binding.root.setOnClickListener { onClick(item.numero) }
             binding.btnLlamar.setOnClickListener { onClick(item.numero) }
         }
