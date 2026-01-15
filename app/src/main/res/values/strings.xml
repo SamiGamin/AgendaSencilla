@@ -3,4 +3,5 @@
     <string name="contactos">Contactos</string>
     <string name="favoritos">Favoritos</string>
     <string name="llamar">Marcar</string>
+    <string name="anadir_nuevo_contacto">crear nuevo contcato</string>
 </resources>
