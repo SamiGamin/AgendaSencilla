@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Selector de color para icono de favorito -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Cuando está seleccionado/activado = Dorado -->
+    <item android:color="@color/favorite_active" android:state_selected="true" />
+    <item android:color="@color/favorite_active" android:state_activated="true" />
+    <item android:color="@color/favorite_active" android:state_checked="true" />
+    <!-- Estado por defecto = Gris -->
+    <item android:color="@color/favorite_inactive" />
+</selector>

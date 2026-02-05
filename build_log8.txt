@@ -1,0 +1,84 @@
+﻿
+> Configure project :app
+ksp-2.2.10-2.0.2 is too old for kotlin-2.2.21. Please upgrade ksp or downgrade kotlin-gradle-plugin to 2.2.10.
+ksp-2.2.10-2.0.2 is too old for kotlin-2.2.21. Please upgrade ksp or downgrade kotlin-gradle-plugin to 2.2.10.
+ksp-2.2.10-2.0.2 is too old for kotlin-2.2.21. Please upgrade ksp or downgrade kotlin-gradle-plugin to 2.2.10.
+ksp-2.2.10-2.0.2 is too old for kotlin-2.2.21. Please upgrade ksp or downgrade kotlin-gradle-plugin to 2.2.10.
+ksp-2.2.10-2.0.2 is too old for kotlin-2.2.21. Please upgrade ksp or downgrade kotlin-gradle-plugin to 2.2.10.
+ksp-2.2.10-2.0.2 is too old for kotlin-2.2.21. Please upgrade ksp or downgrade kotlin-gradle-plugin to 2.2.10.
+ksp-2.2.10-2.0.2 is too old for kotlin-2.2.21. Please upgrade ksp or downgrade kotlin-gradle-plugin to 2.2.10.
+ksp-2.2.10-2.0.2 is too old for kotlin-2.2.21. Please upgrade ksp or downgrade kotlin-gradle-plugin to 2.2.10.
+ksp-2.2.10-2.0.2 is too old for kotlin-2.2.21. Please upgrade ksp or downgrade kotlin-gradle-plugin to 2.2.10.
+ksp-2.2.10-2.0.2 is too old for kotlin-2.2.21. Please upgrade ksp or downgrade kotlin-gradle-plugin to 2.2.10.
+
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:dataBindingMergeDependencyArtifactsDebug UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :app:processDebugNavigationResources
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:compileDebugNavigationResources UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:parseDebugLocalResources
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:mergeDebugResources
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:dataBindingGenBaseClassesDebug
+> Task :app:mergeDebugShaders UP-TO-DATE
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:processDebugManifestForPackage
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:compressDebugAssets UP-TO-DATE
+> Task :app:checkDebugDuplicateClasses UP-TO-DATE
+> Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexDebug UP-TO-DATE
+> Task :app:mergeLibDexDebug UP-TO-DATE
+> Task :app:mergeDebugJniLibFolders UP-TO-DATE
+> Task :app:mergeDebugNativeLibs NO-SOURCE
+> Task :app:stripDebugDebugSymbols NO-SOURCE
+> Task :app:validateSigningDebug UP-TO-DATE
+> Task :app:writeDebugAppMetadata UP-TO-DATE
+> Task :app:writeDebugSigningConfigVersions UP-TO-DATE
+> Task :app:processDebugResources FAILED
+
+[Incubating] Problems report is available at: file:///E:/Android%20studio/AgendaSencilla/build/reports/problems/problems-report.html
+.\gradlew : 
+En línea: 1 Carácter: 1
++ .\gradlew assembleDebug 2>&1 | Out-File -FilePath build_log8.txt -Enc ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:processDebugResources'.
+> A failure occurred while executing com.android.build.gradle.internal.res.LinkApplicationAndroidResourcesTask$TaskAction
+   > Android resource linking failed
+     com.SamiDev.agendasencilla.app-mergeDebugResources-57:/layout/fragment_marcar.xml:13: error: 'match_parent' is 
+incompatible with attribute minHeight (attr) dimension.
+     error: failed linking file resources.
+
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to generate a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.2.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 3s
+29 actionable tasks: 11 executed, 18 up-to-date

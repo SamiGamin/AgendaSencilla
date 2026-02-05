@@ -1,7 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- ══════════════════════════════════════════════ -->
+    <!--              INFORMACIÓN DE LA APP             -->
+    <!-- ══════════════════════════════════════════════ -->
     <string name="app_name">Agenda Sencilla</string>
+    <string name="version_app">Versión 1.0</string>
+    <string name="descripcion_app">Diseñada para facilitar las llamadas</string>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--               NAVEGACIÓN                       -->
+    <!-- ══════════════════════════════════════════════ -->
     <string name="contactos">Contactos</string>
     <string name="favoritos">Favoritos</string>
-    <string name="llamar">Marcar</string>
-    <string name="anadir_nuevo_contacto">crear nuevo contcato</string>
+    <string name="configuracion">Ajustes</string>
+    <string name="historial">Historial</string>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--               ACCIONES                         -->
+    <!-- ══════════════════════════════════════════════ -->
+    <string name="llamar">Llamar</string>
+    <string name="anadir_contacto">Añadir contacto</string>
+    <string name="anadir_nuevo_contacto">Añadir nuevo contacto</string>
+    <string name="editar_contacto">Editar contacto</string>
+    <string name="marcar_favorito">Marcar como favorito</string>
+    <string name="borrar_digito">Borrar dígito</string>
+    <string name="agregar_contacto">Agregar nuevo contacto</string>
+    <string name="abrir_teclado">Abrir teclado numérico</string>
+    <string name="buscar">Buscar</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="aceptar">Aceptar</string>
+    <string name="guardar">Guardar</string>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--               MARCADOR                         -->
+    <!-- ══════════════════════════════════════════════ -->
+    <string name="introducir_numero">Número</string>
+    <string name="numero_vacio">Escribe un número para llamar</string>
+    <string name="tipo_llamada">Tipo de llamada</string>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--             CONFIGURACIÓN                      -->
+    <!-- ══════════════════════════════════════════════ -->
+    <string name="modo_tema">Modo de Tema</string>
+    <string name="modo_tema_descripcion">Elige cómo se ve la aplicación</string>
+    <string name="claro">Claro</string>
+    <string name="oscuro">Oscuro</string>
+    <string name="sistema">Sistema</string>
+
+    <string name="tamano_letras">Tamaño de las Letras</string>
+    <string name="tamano_letras_descripcion">Ajusta el tamaño del texto para leer mejor</string>
+    <string name="normal">Normal</string>
+    <string name="grande">Grande</string>
+    <string name="mas_grande">Más Grande</string>
+
+    <string name="accesibilidad">Accesibilidad</string>
+    <string name="leer_nombres_voz">Leer nombres en voz alta</string>
+    <string name="leer_nombres_voz_descripcion">La aplicación dirá el nombre del contacto antes de llamar</string>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--              HISTORIAL                         -->
+    <!-- ══════════════════════════════════════════════ -->
+    <string name="llamada_entrante">Llamada entrante</string>
+    <string name="llamada_saliente">Llamada saliente</string>
+    <string name="llamada_perdida">Llamada perdida</string>
+    <string name="hoy">Hoy</string>
+    <string name="ayer">Ayer</string>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--              MENSAJES                          -->
+    <!-- ══════════════════════════════════════════════ -->
+    <string name="sin_contactos">No hay contactos</string>
+    <string name="sin_favoritos">No tienes favoritos aún</string>
+    <string name="sin_historial">No hay llamadas recientes</string>
+    <string name="contacto_agregado">Contacto agregado a favoritos</string>
+    <string name="contacto_removido">Contacto removido de favoritos</string>
+    <string name="permiso_necesario">Se necesita permiso para continuar</string>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!--           CONTENT DESCRIPTIONS                 -->
+    <!-- ══════════════════════════════════════════════ -->
+    <string name="foto_contacto">Foto del contacto</string>
+    <string name="icono_llamar">Icono para llamar</string>
+    <string name="icono_favorito">Icono de favorito</string>
+
 </resources>

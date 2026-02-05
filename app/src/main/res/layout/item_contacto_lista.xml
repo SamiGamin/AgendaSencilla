@@ -1,80 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- ITEM CONTACTO EN LISTA - OPTIMIZADO PARA ADULTOS MAYORES -->
+<!-- Avatar 72dp, tipografia grande, boton llamar verde -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/_2sdp"
-    app:cardElevation="@dimen/_4sdp"
-    app:cardCornerRadius="@dimen/_8sdp">
+    android:layout_marginHorizontal="@dimen/spacing_small"
+    android:layout_marginVertical="@dimen/spacing_tiny"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardElevation="2dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/_8sdp">
+        android:minHeight="@dimen/touch_target_xxlarge"
+        android:padding="@dimen/spacing_medium">
 
+        <!-- FOTO DE PERFIL -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/iv_foto_Perfil"
-            android:layout_width="@dimen/_60sdp"
-            android:layout_height="@dimen/_60sdp"
+            android:layout_width="@dimen/avatar_size_medium"
+            android:layout_height="@dimen/avatar_size_medium"
+            android:background="?attr/colorSurfaceContainerHigh"
             android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
-            tools:src="@tools:sample/avatars" /> <!-- Placeholder para la imagen -->
+            tools:src="@tools:sample/avatars" />
 
+        <!-- BOTON FAVORITO (esquina derecha superior) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnFavorito"
+            style="?attr/materialIconButtonStyle"
+            android:layout_width="@dimen/touch_target_large"
+            android:layout_height="@dimen/touch_target_large"
+            android:contentDescription="@string/marcar_favorito"
+            app:icon="@drawable/ic_favorito_borde"
+            app:iconSize="@dimen/icon_size_medium"
+            app:iconTint="@color/selector_favorite_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:rippleColor="@color/favorite_active" />
+
+        <!-- NOMBRE DEL CONTACTO -->
         <TextView
             android:id="@+id/tv_nombre"
+            style="@style/TextAppearance.AgendaSencilla.ContactName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_8sdp"
-            android:layout_marginTop="1sp"
-            android:layout_marginEnd="@dimen/_8sdp"
-            android:textAppearance="?attr/textAppearanceTitleMedium"
-            android:textSize="@dimen/_12sdp"
+            android:layout_marginStart="@dimen/spacing_medium"
+            android:layout_marginEnd="@dimen/spacing_small"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textSize="@dimen/text_size_title_small"
             app:layout_constraintEnd_toStartOf="@+id/btnFavorito"
             app:layout_constraintStart_toEndOf="@+id/iv_foto_Perfil"
             app:layout_constraintTop_toTopOf="@+id/iv_foto_Perfil"
             tools:text="Nombre Apellido" />
 
+        <!-- NUMERO DE TELEFONO -->
         <TextView
             android:id="@+id/tv_Telefono"
+            style="@style/TextAppearance.AgendaSencilla.PhoneNumber"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_8sdp"
-            android:layout_marginEnd="@dimen/_8sdp"
-            android:textAppearance="?attr/textAppearanceBodyMedium"
-            android:textSize="@dimen/_11sdp"
+            android:layout_marginStart="@dimen/spacing_medium"
+            android:layout_marginEnd="@dimen/spacing_small"
             app:layout_constraintEnd_toStartOf="@+id/btnFavorito"
             app:layout_constraintStart_toEndOf="@+id/iv_foto_Perfil"
             app:layout_constraintTop_toBottomOf="@+id/tv_nombre"
-            tools:text="123456789" />
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnFavorito"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="@dimen/_33sdp"
-            android:layout_height="@dimen/_30sdp"
-            app:icon="@drawable/ic_favorito_borde"
-            app:iconGravity="textStart"
-            android:layout_marginStart="@dimen/_1sdp"
-            app:iconPadding="0dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            tools:text="350 489 7017" />
 
+        <!-- BOTON DE LLAMAR - PROMINENTE -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLlamar"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="@dimen/_75sdp"
-            android:layout_height="@dimen/_24sdp"
-            android:contentDescription="Llamar"
+            style="@style/Widget.AgendaSencilla.CallButton.Compact"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/button_height_small"
+            android:layout_marginStart="@dimen/spacing_medium"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:text="@string/llamar"
+            android:textAllCaps="false"
             app:icon="@drawable/ic_call"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btnFavorito"
             app:layout_constraintStart_toEndOf="@+id/iv_foto_Perfil"
             app:layout_constraintTop_toBottomOf="@+id/tv_Telefono" />
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -1,56 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- ITEM HISTORIAL DE LLAMADAS - OPTIMIZADO PARA ADULTOS MAYORES -->
+<!-- Icono grande colorido, texto legible, boton llamar verde, altura minima 72dp -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="12dp"
-    android:gravity="center_vertical">
+    android:layout_marginHorizontal="@dimen/spacing_small"
+    android:layout_marginVertical="@dimen/spacing_tiny"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="?attr/colorSurface"
+    app:cardCornerRadius="@dimen/button_corner_radius"
+    app:cardElevation="1dp">
 
-    <ImageView
-        android:id="@+id/imgTipo"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@drawable/call_missed"
-        android:layout_marginEnd="16dp"/>
-
-    <LinearLayout
-        android:layout_width="0dp"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:minHeight="@dimen/touch_target_xxlarge"
+        android:padding="@dimen/history_item_padding">
 
-        <TextView
-            android:id="@+id/txtNombre"
-            android:layout_width="wrap_content"
+        <!-- ICONO DE TIPO DE LLAMADA (Grande, Colorido) -->
+        <ImageView
+            android:id="@+id/imgTipo"
+            android:layout_width="@dimen/icon_size_large"
+            android:layout_height="@dimen/icon_size_large"
+            android:contentDescription="@string/tipo_llamada"
+            android:src="@drawable/call_missed"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/call_missed"
+            tools:tint="@color/call_missed" />
+
+        <!-- BOTON DE LLAMAR (A la derecha) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLlamar"
+            style="@style/Widget.AgendaSencilla.CallButton.Compact"
+            android:layout_width="@dimen/touch_target_xlarge"
+            android:layout_height="@dimen/touch_target_xlarge"
+            android:contentDescription="@string/llamar"
+            app:icon="@drawable/ic_call"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="@dimen/icon_size_medium"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- INFORMACION DE LLAMADA -->
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Juan Pérez"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:textColor="?attr/colorOnSurface"/>
-        <TextView
-            android:id="@+id/txtTelefono"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="3504897017"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:textColor="?attr/colorOnSurface"/>
+            android:layout_marginHorizontal="@dimen/spacing_medium"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnLlamar"
+            app:layout_constraintStart_toEndOf="@+id/imgTipo"
+            app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/txtFecha"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hoy, 12:30 PM • 5m"
-            android:textSize="12sp"
-            android:textColor="?android:textColorSecondary"/>
-    </LinearLayout>
+            <!-- Nombre del contacto -->
+            <TextView
+                android:id="@+id/txtNombre"
+                style="@style/TextAppearance.AgendaSencilla.ContactName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textSize="@dimen/text_size_title_small"
+                tools:text="Juan Perez" />
 
-    <ImageButton
-        android:id="@+id/btnLlamar"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_call"
-        android:padding="8dp"/>
+            <!-- Numero de telefono -->
+            <TextView
+                android:id="@+id/txtTelefono"
+                style="@style/TextAppearance.AgendaSencilla.PhoneNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_tiny"
+                tools:text="350 489 7017" />
 
-</LinearLayout>
+            <!-- Fecha y duracion -->
+            <TextView
+                android:id="@+id/txtFecha"
+                style="@style/TextAppearance.AgendaSencilla.Caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_tiny"
+                tools:text="Hoy, 12:30 PM - 5 minutos" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

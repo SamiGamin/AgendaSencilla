@@ -1,151 +1,302 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- FRAGMENT CONFIGURACION - OPTIMIZADO PARA ADULTOS MAYORES -->
+<!-- Titulos grandes, botones toggle 56dp, switch con area tactil amplia -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/_12sdp"
+    android:fillViewport="true"
     tools:context=".ui.configuracion.ConfiguracionFragment">
 
-    <!-- Sección de Modo de Tema -->
-    <TextView
-        android:id="@+id/tv_titulo_tema"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Modo de Tema"
-        android:textAppearance="?attr/textAppearanceTitleMedium"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <com.google.android.material.button.MaterialButtonToggleGroup
-        android:id="@+id/toggle_group_tema"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_8sdp"
-        app:layout_constraintTop_toBottomOf="@+id/tv_titulo_tema"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:singleSelection="true"
-        app:selectionRequired="true">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_tema_claro"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Claro"
-            android:textAppearance="?attr/textAppearanceBodyMedium" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_tema_oscuro"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Oscuro"
-            android:textAppearance="?attr/textAppearanceBodyMedium"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_tema_sistema"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Sistema"
-            android:textAppearance="?attr/textAppearanceBodyMedium"/>
-    </com.google.android.material.button.MaterialButtonToggleGroup>
-
-    <View
-        android:id="@+id/view_separador_tema"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="@dimen/_12sdp"
-        android:background="?attr/colorOutlineVariant"
-        app:layout_constraintTop_toBottomOf="@+id/toggle_group_tema"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- Sección de Tamaño de Fuente -->
-    <TextView
-        android:id="@+id/tv_titulo_tamano_fuente"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_12sdp"
-        android:text="Tamaño de las letras"
-        android:textAppearance="?attr/textAppearanceTitleMedium"
-        app:layout_constraintTop_toBottomOf="@+id/view_separador_tema"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_medium">
 
-    <com.google.android.material.button.MaterialButtonToggleGroup
-        android:id="@+id/toggle_group_tamano_fuente"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_8sdp"
-        app:layout_constraintTop_toBottomOf="@+id/tv_titulo_tamano_fuente"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:singleSelection="true"
-        app:selectionRequired="true">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_tamano_normal"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="0dp"
+        <!-- CARD: MODO DE TEMA -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Normal"
-            android:textAppearance="?attr/textAppearanceBodyMedium" />
+            android:layout_marginBottom="@dimen/spacing_medium"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+            app:cardCornerRadius="@dimen/card_corner_radius"
+            app:cardElevation="2dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_tamano_grande"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_medium">
+
+                <!-- Icono y titulo de seccion -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_size_medium"
+                        android:layout_height="@dimen/icon_size_medium"
+                        android:layout_marginEnd="@dimen/spacing_small"
+                        android:contentDescription="@string/modo_tema"
+                        android:src="@drawable/ic_theme"
+                        app:tint="?attr/colorPrimary" />
+
+                    <TextView
+                        android:id="@+id/tv_titulo_tema"
+                        style="@style/TextAppearance.AgendaSencilla.SectionTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/modo_tema" />
+
+                </LinearLayout>
+
+                <!-- Descripcion -->
+                <TextView
+                    style="@style/TextAppearance.AgendaSencilla.Caption"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_tiny"
+                    android:layout_marginBottom="@dimen/spacing_medium"
+                    android:text="@string/modo_tema_descripcion" />
+
+                <!-- Toggle Group para tema -->
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/toggle_group_tema"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:selectionRequired="true"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_tema_claro"
+                        style="@style/Widget.AgendaSencilla.ToggleButton"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height_medium"
+                        android:layout_weight="1"
+                        android:text="@string/claro"
+                        app:icon="@drawable/ic_light_mode" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_tema_oscuro"
+                        style="@style/Widget.AgendaSencilla.ToggleButton"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height_medium"
+                        android:layout_weight="1"
+                        android:text="@string/oscuro"
+                        app:icon="@drawable/ic_dark_mode" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_tema_sistema"
+                        style="@style/Widget.AgendaSencilla.ToggleButton"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height_medium"
+                        android:layout_weight="1"
+                        android:text="@string/sistema"
+                        app:icon="@drawable/ic_phone" />
+
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- CARD: TAMANO DE LAS LETRAS -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Grande"
-            android:textAppearance="?attr/textAppearanceBodyMedium"/>
+            android:layout_marginBottom="@dimen/spacing_medium"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+            app:cardCornerRadius="@dimen/card_corner_radius"
+            app:cardElevation="2dp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_tamano_mas_grande"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_medium">
+
+                <!-- Icono y titulo de seccion -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_size_medium"
+                        android:layout_height="@dimen/icon_size_medium"
+                        android:layout_marginEnd="@dimen/spacing_small"
+                        android:contentDescription="@string/tamano_letras"
+                        android:src="@drawable/ic_text_size"
+                        app:tint="?attr/colorPrimary" />
+
+                    <TextView
+                        android:id="@+id/tv_titulo_tamano_fuente"
+                        style="@style/TextAppearance.AgendaSencilla.SectionTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/tamano_letras" />
+
+                </LinearLayout>
+
+                <!-- Descripcion -->
+                <TextView
+                    style="@style/TextAppearance.AgendaSencilla.Caption"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_tiny"
+                    android:layout_marginBottom="@dimen/spacing_medium"
+                    android:text="@string/tamano_letras_descripcion" />
+
+                <!-- Toggle Group para tamano de fuente -->
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/toggle_group_tamano_fuente"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:selectionRequired="true"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_tamano_normal"
+                        style="@style/Widget.AgendaSencilla.ToggleButton"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height_medium"
+                        android:layout_weight="1"
+                        android:text="@string/normal"
+                        android:textSize="14sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_tamano_grande"
+                        style="@style/Widget.AgendaSencilla.ToggleButton"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height_medium"
+                        android:layout_weight="1"
+                        android:text="@string/grande"
+                        android:textSize="18sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_tamano_mas_grande"
+                        style="@style/Widget.AgendaSencilla.ToggleButton"
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/button_height_medium"
+                        android:layout_weight="1"
+                        android:text="@string/mas_grande"
+                        android:textSize="22sp" />
+
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- CARD: ACCESIBILIDAD -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Más Grande"
-            android:textAppearance="?attr/textAppearanceBodyMedium"/>
-    </com.google.android.material.button.MaterialButtonToggleGroup>
+            android:layout_marginBottom="@dimen/spacing_medium"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+            app:cardCornerRadius="@dimen/card_corner_radius"
+            app:cardElevation="2dp">
 
-    <View
-        android:id="@+id/view_separador_fuente"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="@dimen/_12sdp"
-        android:background="?attr/colorOutlineVariant"
-        app:layout_constraintTop_toBottomOf="@+id/toggle_group_tamano_fuente"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_medium">
 
-    <!-- Sección de Accesibilidad (Lectura en Voz) -->
-    <TextView
-        android:id="@+id/tv_titulo_accesibilidad"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_12sdp"
-        android:text="Accesibilidad"
-        android:textAppearance="?attr/textAppearanceTitleMedium"
-        app:layout_constraintTop_toBottomOf="@+id/view_separador_fuente"
-        app:layout_constraintStart_toStartOf="parent" />
+                <!-- Icono y titulo de seccion -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/switch_lectura_en_voz"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_8sdp"
-        android:text="Leer nombres en voz alta"
-        android:textAppearance="?attr/textAppearanceBodyLarge"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_titulo_accesibilidad" />
+                    <ImageView
+                        android:layout_width="@dimen/icon_size_medium"
+                        android:layout_height="@dimen/icon_size_medium"
+                        android:layout_marginEnd="@dimen/spacing_small"
+                        android:contentDescription="@string/accesibilidad"
+                        android:src="@drawable/ic_accessibility"
+                        app:tint="?attr/colorPrimary" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+                    <TextView
+                        android:id="@+id/tv_titulo_accesibilidad"
+                        style="@style/TextAppearance.AgendaSencilla.SectionTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/accesibilidad" />
+
+                </LinearLayout>
+
+                <!-- Switch para lectura en voz -->
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switch_lectura_en_voz"
+                    style="@style/Widget.AgendaSencilla.Switch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_medium"
+                    android:minHeight="@dimen/touch_target_large"
+                    android:padding="@dimen/spacing_small"
+                    android:text="@string/leer_nombres_voz"
+                    android:textSize="@dimen/text_size_body" />
+
+                <!-- Descripcion de la funcion -->
+                <TextView
+                    style="@style/TextAppearance.AgendaSencilla.Caption"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_xxlarge"
+                    android:text="@string/leer_nombres_voz_descripcion" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- INFORMACION DE LA APP -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+            app:cardCornerRadius="@dimen/card_corner_radius"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_large">
+
+                <TextView
+                    style="@style/TextAppearance.AgendaSencilla.Body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_name"
+                    android:textStyle="bold" />
+
+                <TextView
+                    style="@style/TextAppearance.AgendaSencilla.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_tiny"
+                    android:text="@string/version_app" />
+
+                <TextView
+                    style="@style/TextAppearance.AgendaSencilla.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:gravity="center"
+                    android:text="@string/descripcion_app" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+
+</ScrollView>

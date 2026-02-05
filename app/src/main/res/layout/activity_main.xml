@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!--      ACTIVITY MAIN - OPTIMIZADO PARA ADULTOS MAYORES              -->
+<!--      • Navegación inferior grande (72dp)                          -->
+<!--      • Iconos y etiquetas más grandes                             -->
+<!--      • Toolbar con título legible                                 -->
+<!--      • FAB extra grande para añadir contacto                      -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,18 +15,25 @@
     android:fitsSystemWindows="true"
     tools:context=".ui.MainActivity">
 
-    <!-- Toolbar -->
+    <!-- ══════════════════════════════════════════════ -->
+    <!--              TOOLBAR PRINCIPAL                 -->
+    <!-- ══════════════════════════════════════════════ -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
+        style="@style/Widget.AgendaSencilla.Toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="@dimen/toolbar_height"
         android:background="?attr/colorSurface"
+        android:elevation="4dp"
         app:layout_constraintTop_toTopOf="parent"
         app:menu="@menu/menu_contactos"
-        app:title="Favoritos"
-        app:titleCentered="true" />
+        app:title="@string/favoritos"
+        app:titleCentered="true"
+        app:titleTextAppearance="@style/TextAppearance.AgendaSencilla.Toolbar.Title" />
 
-    <!-- Contenedor de Fragments (contenido principal) -->
+    <!-- ══════════════════════════════════════════════ -->
+    <!--        CONTENEDOR DE FRAGMENTOS                -->
+    <!-- ══════════════════════════════════════════════ -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host_fragment"
         android:name="androidx.navigation.fragment.NavHostFragment"
@@ -32,29 +46,44 @@
         app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:navGraph="@navigation/nav_grah" />
 
-    <!-- BottomNavigationView -->
+    <!-- ══════════════════════════════════════════════ -->
+    <!--    NAVEGACIÓN INFERIOR - GRANDE Y ACCESIBLE   -->
+    <!--    • Altura 72dp para fácil toque             -->
+    <!--    • Iconos de 32dp                           -->
+    <!--    • Etiquetas siempre visibles               -->
+    <!-- ══════════════════════════════════════════════ -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navegacion_inferior_view"
+        style="@style/Widget.AgendaSencilla.BottomNavigation"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorSurface"
-        app:elevation="8dp"
-        app:itemIconSize="28dp"
-        app:labelVisibilityMode="selected"
+        android:layout_height="@dimen/bottom_nav_height"
+        android:background="?attr/colorSurfaceContainer"
+        android:elevation="8dp"
+        app:itemIconSize="@dimen/bottom_nav_icon_size"
+        app:itemPaddingBottom="@dimen/spacing_small"
+        app:itemPaddingTop="@dimen/spacing_small"
+        app:labelVisibilityMode="labeled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:menu="@menu/menu_navegacion_inferior" />
 
-    <!-- FAB -->
+    <!-- ══════════════════════════════════════════════ -->
+    <!--    FAB AÑADIR CONTACTO - EXTRA GRANDE         -->
+    <!-- ══════════════════════════════════════════════ -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_anadir_contacto"
+        style="@style/Widget.AgendaSencilla.FAB"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:contentDescription="Añadir nuevo contacto"
+        android:layout_margin="@dimen/fab_margin"
+        android:contentDescription="@string/anadir_contacto"
+        app:backgroundTint="?attr/colorPrimaryContainer"
+        app:fabCustomSize="@dimen/fab_size"
         app:layout_constraintBottom_toTopOf="@id/navegacion_inferior_view"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/ic_add" />
+        app:maxImageSize="@dimen/fab_icon_size"
+        app:srcCompat="@drawable/ic_add"
+        app:tint="?attr/colorOnPrimaryContainer" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

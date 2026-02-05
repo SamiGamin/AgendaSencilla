@@ -140,4 +140,32 @@
     <color name="md_theme_surfaceContainer_highContrast">#2F3036</color>
     <color name="md_theme_surfaceContainerHigh_highContrast">#3A3B41</color>
     <color name="md_theme_surfaceContainerHighest_highContrast">#45474C</color>
+
+    <!-- ════════════════════════════════════════════════════ -->
+    <!--   🎯 COLORES ESPECIALES PARA ACCESIBILIDAD (OSCURO)  -->
+    <!-- ════════════════════════════════════════════════════ -->
+
+    <!-- Botón de Llamar - Verde brillante (más saturado en oscuro) -->
+    <color name="call_button_color">#26A69A</color>
+    <color name="call_button_pressed">#4DB6AC</color>
+    <color name="call_button_on">#FFFFFF</color>
+
+    <!-- Indicadores de tipo de llamada (más brillantes en oscuro) -->
+    <color name="call_incoming">#66BB6A</color>    <!-- Verde - Entrantes -->
+    <color name="call_outgoing">#42A5F5</color>    <!-- Azul - Salientes -->
+    <color name="call_missed">#EF5350</color>      <!-- Rojo - Perdidas -->
+
+    <!-- Favoritos -->
+    <color name="favorite_active">#FFB300</color>   <!-- Dorado cuando es favorito -->
+    <color name="favorite_inactive">#757575</color> <!-- Gris cuando no es favorito -->
+
+    <!-- Estados de botones -->
+    <color name="button_disabled">#616161</color>
+    <color name="ripple_light">#22000000</color>
+    <color name="ripple_dark">#33FFFFFF</color>
+
+    <!-- Bordes para alto contraste -->
+    <color name="divider">#424242</color>
+    <color name="divider_dark">#616161</color>
+
 </resources>

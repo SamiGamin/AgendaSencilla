@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- DIMENSIONES OPTIMIZADAS PARA ADULTOS MAYORES -->
+
+    <!-- AREAS TACTILES MINIMAS (WCAG recomienda minimo 48dp) -->
+    <dimen name="touch_target_min">48dp</dimen>
+    <dimen name="touch_target_large">56dp</dimen>
+    <dimen name="touch_target_xlarge">64dp</dimen>
+    <dimen name="touch_target_xxlarge">72dp</dimen>
+
+    <!-- MARGENES Y ESPACIADO (espaciado generoso) -->
+    <dimen name="spacing_tiny">4dp</dimen>
+    <dimen name="spacing_small">8dp</dimen>
+    <dimen name="spacing_medium">16dp</dimen>
+    <dimen name="spacing_large">24dp</dimen>
+    <dimen name="spacing_xlarge">32dp</dimen>
+    <dimen name="spacing_xxlarge">48dp</dimen>
+
+    <!-- TAMANOS DE FUENTE (escalados para facil lectura) -->
+    <dimen name="text_size_caption">14sp</dimen>
+    <dimen name="text_size_body">18sp</dimen>
+    <dimen name="text_size_body_large">20sp</dimen>
+    <dimen name="text_size_title_small">22sp</dimen>
+    <dimen name="text_size_title">26sp</dimen>
+    <dimen name="text_size_headline">32sp</dimen>
+    <dimen name="text_size_display">40sp</dimen>
+
+    <!-- Tamano para numeros del marcador -->
+    <dimen name="text_size_dialpad">28sp</dimen>
+    <dimen name="text_size_dialpad_number">36sp</dimen>
+    <dimen name="text_size_phone_display">32sp</dimen>
+
+    <!-- BOTONES -->
+    <dimen name="button_height_small">48dp</dimen>
+    <dimen name="button_height_medium">56dp</dimen>
+    <dimen name="button_height_large">64dp</dimen>
+    <dimen name="button_height_xlarge">72dp</dimen>
+    <dimen name="button_corner_radius">16dp</dimen>
+    <dimen name="button_corner_radius_large">24dp</dimen>
+
+    <!-- Boton de llamar (extra grande) -->
+    <dimen name="call_button_width">200dp</dimen>
+    <dimen name="call_button_height">64dp</dimen>
+
+    <!-- TECLAS DEL MARCADOR (DIALPAD) -->
+    <dimen name="dialpad_key_height">80dp</dimen>
+    <dimen name="dialpad_key_margin">6dp</dimen>
+    <dimen name="dialpad_corner_radius">20dp</dimen>
+
+    <!-- CARDS Y CONTENEDORES -->
+    <dimen name="card_corner_radius">20dp</dimen>
+    <dimen name="card_corner_radius_large">28dp</dimen>
+    <dimen name="card_elevation">4dp</dimen>
+    <dimen name="card_padding">16dp</dimen>
+    <dimen name="card_margin">8dp</dimen>
+
+    <!-- FOTOS DE CONTACTO -->
+    <dimen name="avatar_size_small">56dp</dimen>
+    <dimen name="avatar_size_medium">72dp</dimen>
+    <dimen name="avatar_size_large">96dp</dimen>
+
+    <!-- ICONOS -->
+    <dimen name="icon_size_small">24dp</dimen>
+    <dimen name="icon_size_medium">32dp</dimen>
+    <dimen name="icon_size_large">40dp</dimen>
+    <dimen name="icon_size_xlarge">48dp</dimen>
+
+    <!-- FAB (Boton Flotante) -->
+    <dimen name="fab_size">72dp</dimen>
+    <dimen name="fab_margin">24dp</dimen>
+    <dimen name="fab_icon_size">32dp</dimen>
+
+    <!-- BARRA DE NAVEGACION INFERIOR -->
+    <dimen name="bottom_nav_height">72dp</dimen>
+    <dimen name="bottom_nav_icon_size">32dp</dimen>
+    <dimen name="bottom_nav_label_size">14sp</dimen>
+
+    <!-- TOOLBAR -->
+    <dimen name="toolbar_height">64dp</dimen>
+    <dimen name="toolbar_title_size">22sp</dimen>
+
+    <!-- HISTORIAL DE LLAMADAS -->
+    <dimen name="history_item_padding">16dp</dimen>
+    <dimen name="history_icon_size">32dp</dimen>
+
+</resources>

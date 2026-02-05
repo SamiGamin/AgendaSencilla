@@ -1,180 +1,192 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:fillViewport="true"
     tools:context=".ui.gestion.directorio.MarcarFragment">
 
-    <!-- Campo donde se muestra el número -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
+        <!-- RecyclerView de sugerencias (flexible, se reduce si es necesario) -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_sugerencias"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:clipToPadding="false"
+            android:elevation="4dp"
+            android:paddingVertical="@dimen/_3sdp"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:layout_marginEnd="@dimen/_10sdp"
+            android:visibility="visible"
+            app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="wrap"
+            app:layout_constraintHeight_max="200dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintVertical_chainStyle="packed"
+            tools:listitem="@layout/item_numero_marcar"
+            tools:visibility="visible" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_sugerencias"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:clipToPadding="false"
-        android:elevation="4dp"
-        android:maxHeight="300dp"
-        android:paddingVertical="@dimen/_3sdp"
-        android:layout_marginStart="@dimen/_10sdp"
-        android:layout_marginEnd="@dimen/_10sdp"
-        android:visibility="visible"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/item_numero_marcar"
-        tools:visibility="visible" />
-
-
-    <!-- Grid de botones -->
-
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/_10sdp"
-        android:layout_marginTop="@dimen/_55sdp"
-        android:layout_marginEnd="@dimen/_10sdp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-
-        <ImageButton
-            android:id="@+id/btn_agregar"
-            android:layout_width="wrap_content"
+        <!-- Campo donde se muestra el numero -->
+        <LinearLayout
+            android:id="@+id/linearLayout"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/_5sdp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="@dimen/_15sdp"
-            android:src="@drawable/person_add" />
+            android:layout_marginStart="@dimen/_10sdp"
+            android:layout_marginEnd="@dimen/_10sdp"
+            android:layout_marginBottom="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="@id/grid_teclas"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/til_numero"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:padding="@dimen/_2sdp">
+            <!-- Boton Agregar Contacto -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_agregar"
+                style="?attr/materialIconButtonStyle"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/agregar_contacto"
+                app:icon="@drawable/person_add"
+                app:iconSize="24dp"
+                app:iconTint="?attr/colorPrimary" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_numero"
-                android:layout_width="match_parent"
+            <!-- Campo de texto para el numero -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/til_numero"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:cursorVisible="false"
-                android:focusable="false"
-                android:gravity="center"
-                android:hint="Introducir número"
-                android:inputType="none"
-                android:textSize="@dimen/_20sdp" />
+                android:layout_weight="1"
+                app:hintEnabled="false">
 
-        </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_numero"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:cursorVisible="false"
+                    android:focusable="false"
+                    android:gravity="center"
+                    android:hint="@string/introducir_numero"
+                    android:inputType="none"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="24sp" />
 
-        <ImageButton
-            android:id="@+id/btn_borrar"
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Boton Borrar -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_borrar"
+                style="?attr/materialIconButtonStyle"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/borrar_digito"
+                app:icon="@drawable/backspace"
+                app:iconSize="24dp"
+                app:iconTint="?attr/colorError" />
+
+        </LinearLayout>
+
+        <!-- Grid de teclas - altura fija para garantizar visibilidad -->
+        <GridLayout
+            android:id="@+id/grid_teclas"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:layout_marginEnd="@dimen/_10sdp"
+            android:layout_marginBottom="8dp"
+            android:alignmentMode="alignBounds"
+            android:columnCount="3"
+            android:columnOrderPreserved="false"
+            android:padding="4dp"
+            android:rowCount="4"
+            app:layout_constraintBottom_toTopOf="@id/fab_abrir_teclado"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <!-- Fila 1: 1, 2, 3 -->
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.AgendaSencilla.DialpadButton"
+                android:text="1" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.AgendaSencilla.DialpadButton"
+                android:tag="ABC"
+                android:text="2" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.AgendaSencilla.DialpadButton"
+                android:tag="DEF"
+                android:text="3" />
+
+            <!-- Fila 2: 4, 5, 6 -->
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.AgendaSencilla.DialpadButton"
+                android:tag="GHI"
+                android:text="4" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.AgendaSencilla.DialpadButton"
+                android:tag="JKL"
+                android:text="5" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.AgendaSencilla.DialpadButton"
+                android:tag="MNO"
+                android:text="6" />
+
+            <!-- Fila 3: 7, 8, 9 -->
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.AgendaSencilla.DialpadButton"
+                android:tag="PQRS"
+                android:text="7" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.AgendaSencilla.DialpadButton"
+                android:tag="TUV"
+                android:text="8" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.AgendaSencilla.DialpadButton"
+                android:tag="WXYZ"
+                android:text="9" />
+
+            <!-- Fila 4: *, 0, # -->
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.AgendaSencilla.DialpadButton"
+                android:text="*" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.AgendaSencilla.DialpadButton"
+                android:tag="+"
+                android:text="0" />
+
+            <com.google.android.material.button.MaterialButton
+                style="@style/Widget.AgendaSencilla.DialpadButton"
+                android:text="#" />
+
+        </GridLayout>
+
+        <!-- FAB para abrir teclado cuando esta oculto -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_abrir_teclado"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_margin="@dimen/_5sdp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="@dimen/_15sdp"
-            android:src="@drawable/backspace" />
+            android:layout_marginBottom="16dp"
+            android:src="@drawable/dialpad_24dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:visibility="visible" />
 
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <GridLayout
-        android:id="@+id/grid_teclas"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="@dimen/_10sdp"
-        android:layout_marginEnd="@dimen/_10sdp"
-        android:alignmentMode="alignBounds"
-        android:columnCount="3"
-        android:columnOrderPreserved="false"
-        android:padding="@dimen/_12sdp"
-        android:rowCount="4"
-
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
-
-        <com.google.android.material.button.MaterialButton
-            style="@style/Widget.App.DialpadButton"
-            android:text="1" />
-
-        <com.google.android.material.button.MaterialButton
-            style="@style/Widget.App.DialpadButton"
-            android:tag="ABC"
-            android:text="2" />
-
-        <com.google.android.material.button.MaterialButton
-            style="@style/Widget.App.DialpadButton"
-            android:tag="DEF"
-            android:text="3" />
-
-        <com.google.android.material.button.MaterialButton
-            style="@style/Widget.App.DialpadButton"
-            android:tag="GHI"
-            android:text="4" />
-
-        <com.google.android.material.button.MaterialButton
-            style="@style/Widget.App.DialpadButton"
-            android:tag="JKL"
-            android:text="5" />
-
-        <com.google.android.material.button.MaterialButton
-            style="@style/Widget.App.DialpadButton"
-            android:tag="MNO"
-            android:text="6" />
-
-        <com.google.android.material.button.MaterialButton
-            style="@style/Widget.App.DialpadButton"
-            android:tag="PQRS"
-            android:text="7" />
-
-        <com.google.android.material.button.MaterialButton
-            style="@style/Widget.App.DialpadButton"
-            android:tag="TUV"
-            android:text="8" />
-
-        <com.google.android.material.button.MaterialButton
-            style="@style/Widget.App.DialpadButton"
-            android:tag="WXYZ"
-            android:text="9" />
-
-        <com.google.android.material.button.MaterialButton
-            style="@style/Widget.App.DialpadButton"
-            android:text="*" />
-
-        <com.google.android.material.button.MaterialButton
-            style="@style/Widget.App.DialpadButton"
-            android:tag="+"
-            android:text="0" />
-
-        <com.google.android.material.button.MaterialButton
-            style="@style/Widget.App.DialpadButton"
-            android:text="#" />
-    </GridLayout>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_abrir_teclado"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/_16sdp"
-        android:layout_marginEnd="@dimen/_16sdp"
-        android:layout_marginBottom="@dimen/_16sdp"
-        android:src="@drawable/dialpad_24dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:visibility="visible" />
-
-
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

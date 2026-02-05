@@ -141,4 +141,30 @@
     <color name="md_theme_surfaceContainerHigh_highContrast">#D4D4DB</color>
     <color name="md_theme_surfaceContainerHighest_highContrast">#C6C6CD</color>
 
+    <!-- COLORES ESPECIALES PARA ACCESIBILIDAD -->
+
+
+    <!-- Botón de Llamar - Verde brillante y prominente -->
+    <color name="call_button_color">#00897B</color>
+    <color name="call_button_pressed">#00695C</color>
+    <color name="call_button_on">#FFFFFF</color>
+
+    <!-- Indicadores de tipo de llamada -->
+    <color name="call_incoming">#43A047</color>    <!-- Verde - Entrantes -->
+    <color name="call_outgoing">#1E88E5</color>    <!-- Azul - Salientes -->
+    <color name="call_missed">#E53935</color>      <!-- Rojo - Perdidas -->
+
+    <!-- Favoritos -->
+    <color name="favorite_active">#FFA000</color>   <!-- Dorado cuando es favorito -->
+    <color name="favorite_inactive">#9E9E9E</color> <!-- Gris cuando no es favorito -->
+
+    <!-- Estados de botones -->
+    <color name="button_disabled">#9E9E9E</color>
+    <color name="ripple_light">#22000000</color>
+    <color name="ripple_dark">#22FFFFFF</color>
+
+    <!-- Bordes para alto contraste -->
+    <color name="divider">#E0E0E0</color>
+    <color name="divider_dark">#424242</color>
+
 </resources>
